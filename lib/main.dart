@@ -19,6 +19,77 @@ Future<void> _launchEmail(String email, {String subject = ''}) async {
   }
 }
 
+/// Reusable standardized AppBar for all pages with consistent navigation
+PreferredSizeWidget buildAppBar(
+  BuildContext context, {
+  required String title,
+  bool showTitle = true,
+  bool isHome = false,
+  bool isStore = false,
+}) {
+  return AppBar(
+    backgroundColor: AppTokens.colorBlack,
+    title: showTitle
+        ? ShinyText(
+            text: title,
+            speed: 3,
+            style: GoogleFonts.montserrat(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: AppTokens.colorLightGrey,
+            ),
+          )
+        : null,
+    actions: [
+      TextButton(
+        onPressed: isHome
+            ? null
+            : () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const HomePage()),
+                  (route) => false,
+                );
+              },
+        child: Text('Home', style: AppTokens.labelLarge),
+      ),
+      TextButton(
+        onPressed: isStore
+            ? null
+            : () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const StorePage()),
+                  (route) => false,
+                );
+              },
+        child: Text('Store', style: AppTokens.labelLarge),
+      ),
+      TextButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const SupportChatPage()),
+          );
+        },
+        child: Text('Support', style: AppTokens.labelLarge),
+      ),
+      TextButton(
+        onPressed: () {
+          _launchEmail('support@company.com', subject: 'Support request');
+        },
+        child: Text('Contact', style: AppTokens.labelLarge),
+      ),
+      TextButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const AboutPage()),
+          );
+        },
+        child: Text('About', style: AppTokens.labelLarge),
+      ),
+      cartNavButton(context),
+    ],
+  );
+}
+
 void main() {
   runApp(
     ChangeNotifierProvider(
@@ -105,10 +176,7 @@ class _SupportChatPageState extends State<SupportChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Support', style: AppTokens.labelLarge),
-        actions: [cartNavButton(context)],
-      ),
+      appBar: buildAppBar(context, title: 'Support'),
       body: Column(
         children: [
           Expanded(
@@ -260,52 +328,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppTokens.colorBlack,
-        title: ShinyText(
-          text: 'COMPANY NAME',
-          speed: 3,
-          style: GoogleFonts.montserrat(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: AppTokens.colorLightGrey,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {},
-            child: Text('Home', style: AppTokens.labelLarge),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const StorePage()));
-            },
-            child: Text('Store', style: AppTokens.labelLarge),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const SupportChatPage()));
-            },
-            child: Text('Support', style: AppTokens.labelLarge),
-          ),
-          TextButton(
-            onPressed: () {
-              _launchEmail('support@company.com', subject: 'Support request');
-            },
-            child: Text('Contact', style: AppTokens.labelLarge),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const AboutPage()));
-            },
-            child: Text('About', style: AppTokens.labelLarge),
-          ),
-          cartNavButton(context),
-        ],
-      ),
+      appBar: buildAppBar(context, title: 'COMPANY NAME', isHome: true),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -772,46 +795,7 @@ class _CartPageState extends State<CartPage> {
   Widget build(BuildContext context) {
     final cart = Provider.of<CartModel>(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Your Cart'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const HomePage()),
-                (route) => false,
-              );
-            },
-            child: Text('Home', style: AppTokens.labelLarge),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const StorePage()),
-                (route) => false,
-              );
-            },
-            child: Text('Store', style: AppTokens.labelLarge),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (context) => const SupportChatPage()),
-              );
-            },
-            child: Text('Support', style: AppTokens.labelLarge),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const AboutPage()),
-              );
-            },
-            child: Text('About', style: AppTokens.labelLarge),
-          ),
-        ],
-      ),
+      appBar: buildAppBar(context, title: 'Your Cart'),
       body: Listener(
         onPointerHover: (event) {
           setState(() {
@@ -854,7 +838,7 @@ class _CartPageState extends State<CartPage> {
                           const SnackBar(content: Text('Purchase successful!')),
                         );
                       },
-                child: const Text('Buy Now'),
+                child: const Text('Checkout'),
               ),
             ),
           ],
@@ -903,57 +887,8 @@ class StorePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: ShinyText(
-          text: 'STORE - COMPANY NAME',
-          speed: 3,
-          style: GoogleFonts.montserrat(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: AppTokens.colorLightGrey),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const HomePage()),
-                (route) => false,
-              );
-            },
-            child: Text('Home',
-                style: AppTokens.labelLarge
-                    .copyWith(color: AppTokens.colorLightGrey)),
-          ),
-          TextButton(
-            onPressed: () {},
-            child: Text('Store',
-                style: AppTokens.labelLarge
-                    .copyWith(color: AppTokens.colorLightGrey)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (context) => const SupportChatPage()),
-              );
-            },
-            child: Text('Support',
-                style: AppTokens.labelLarge
-                    .copyWith(color: AppTokens.colorLightGrey)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const AboutPage()),
-              );
-            },
-            child: Text('About',
-                style: AppTokens.labelLarge
-                    .copyWith(color: AppTokens.colorLightGrey)),
-          ),
-          cartNavButton(context),
-        ],
-      ),
+      appBar:
+          buildAppBar(context, title: 'STORE - COMPANY NAME', isStore: true),
       body: Column(
         children: [
           SizedBox(height: AppTokens.spacingXl),
@@ -1112,18 +1047,20 @@ class _ProductCardState extends State<_ProductCard> {
             ),
             SizedBox(height: AppTokens.spacingXs),
             ElevatedButton(
-              onPressed: () async {
-                final url = Uri.parse('https://shopee.ph/product/1234567890');
-                if (!await launchUrl(url,
-                    mode: LaunchMode.externalApplication)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Could not launch Shopee link'),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => ProductDetailsPage(
+                      productIndex: widget.index,
+                      productName: 'Product ${widget.index + 1}',
+                      productDesc:
+                          'Short description of the product goes here.',
+                      productPrice: '₱9,999',
                     ),
-                  );
-                }
+                  ),
+                );
               },
-              child: Text('Shop Now', style: GoogleFonts.openSans()),
+              child: Text('View Product', style: GoogleFonts.openSans()),
             ),
           ],
         ),
@@ -1351,18 +1288,20 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                         style: TextStyle(color: AppTokens.colorBlack)),
                     SizedBox(height: AppTokens.spacingXs),
                     ElevatedButton(
-                      onPressed: () async {
-                        final url =
-                            Uri.parse('https://shopee.ph/product/1234567890');
-                        if (!await launchUrl(url,
-                            mode: LaunchMode.externalApplication)) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Could not launch Shopee link')),
-                          );
-                        }
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => ProductDetailsPage(
+                              productIndex: widget.index,
+                              productName: 'Product ${widget.index + 1}',
+                              productDesc:
+                                  'Short description of the product goes here.',
+                              productPrice: '₱9,999',
+                            ),
+                          ),
+                        );
                       },
-                      child: const Text('Shop Now'),
+                      child: const Text('View Product'),
                     ),
                   ],
                 ),
@@ -1430,7 +1369,7 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                   ],
                 ),
               ),
-            // Bouncing Buy Now pill
+            // Bouncing View Product pill
             Positioned(
               left: 0,
               right: 0,
@@ -1440,11 +1379,16 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                 child: Center(
                   child: GestureDetector(
                     onTap: () {
-                      final cart =
-                          Provider.of<CartModel>(context, listen: false);
-                      cart.addToCart(widget.index);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Added to cart')),
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => ProductDetailsPage(
+                            productIndex: widget.index,
+                            productName: 'Product ${widget.index + 1}',
+                            productDesc:
+                                'Short description of the product goes here.',
+                            productPrice: '₱9,999',
+                          ),
+                        ),
                       );
                     },
                     child: Container(
@@ -1462,7 +1406,7 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                           ),
                         ],
                       ),
-                      child: Text('Buy Now',
+                      child: Text('View Product',
                           style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
                               color: AppTokens.colorWhite)),
