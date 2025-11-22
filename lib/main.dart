@@ -331,15 +331,17 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: buildAppBar(context, title: 'COMPANY NAME', isHome: true),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: LayoutBuilder(builder: (context, constraints) {
+        final height = MediaQuery.of(context).size.height - kToolbarHeight;
+        // Stack: fixed hero at top, scrollable content beneath it
+        return Stack(
           children: [
-            // HERO - fill viewport so products are below the fold
-            LayoutBuilder(builder: (context, constraints) {
-              final height =
-                  MediaQuery.of(context).size.height - kToolbarHeight;
-              return Container(
+            // Fixed hero banner
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
                 width: double.infinity,
                 height: height,
                 padding: EdgeInsets.symmetric(horizontal: AppTokens.spacingLg),
@@ -353,6 +355,7 @@ class _HomePageState extends State<HomePage> {
                       style: AppTokens.headingLarge,
                     ),
                     SizedBox(height: AppTokens.spacingSm),
+                    // This TextType stays fixed at the top now
                     TextType(
                       text: [
                         'AI-powered machines designed to revolutionize everyday life.'
@@ -385,49 +388,66 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ],
                 ),
-              );
-            }),
-            SizedBox(height: AppTokens.spacingXl),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppTokens.spacingMd),
-              child: Text('Featured Products', style: AppTokens.headingMedium),
-            ),
-            SizedBox(height: AppTokens.spacingSm),
-            SizedBox(height: 260, child: const FutureProductCarousel()),
-            SizedBox(height: AppTokens.spacingLg),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => const StorePage()));
-                },
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTokens.colorOrange),
-                child: Text('View All Products', style: AppTokens.labelLarge),
               ),
             ),
-            SizedBox(height: AppTokens.spacing2xl),
-            // CTA
-            Container(
-              width: double.infinity,
-              color: AppTokens.colorDarkGrey,
-              padding: EdgeInsets.symmetric(
-                  vertical: AppTokens.spacingXl,
-                  horizontal: AppTokens.spacingLg),
-              child: Column(
-                children: [
-                  Text('Join the Future of Robotics',
-                      style: AppTokens.headingSmall),
-                  SizedBox(height: AppTokens.spacingXs),
-                  Text(
-                      'Collaborate, invest, or explore our latest breakthroughs in AI automation.',
-                      style: AppTokens.bodyLarge),
-                ],
+
+            // Scrollable content below the fixed hero
+            Positioned.fill(
+              top: height,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: AppTokens.spacingXl),
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: AppTokens.spacingMd),
+                      child: Text('Featured Products',
+                          style: AppTokens.headingMedium),
+                    ),
+                    SizedBox(height: AppTokens.spacingSm),
+                    SizedBox(height: 260, child: const FutureProductCarousel()),
+                    SizedBox(height: AppTokens.spacingLg),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const StorePage()));
+                        },
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTokens.colorOrange),
+                        child: Text('View All Products',
+                            style: AppTokens.labelLarge),
+                      ),
+                    ),
+                    SizedBox(height: AppTokens.spacing2xl),
+                    // CTA
+                    Container(
+                      width: double.infinity,
+                      color: AppTokens.colorDarkGrey,
+                      padding: EdgeInsets.symmetric(
+                          vertical: AppTokens.spacingXl,
+                          horizontal: AppTokens.spacingLg),
+                      child: Column(
+                        children: [
+                          Text('Join the Future of Robotics',
+                              style: AppTokens.headingSmall),
+                          SizedBox(height: AppTokens.spacingXs),
+                          Text(
+                              'Collaborate, invest, or explore our latest breakthroughs in AI automation.',
+                              style: AppTokens.bodyLarge),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
-        ),
-      ),
+        );
+      }),
     );
   }
 }
@@ -478,45 +498,85 @@ class _FutureProductCarouselState extends State<FutureProductCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    return PageView.builder(
-      controller: _controller,
-      itemCount: featuredProducts.length,
-      itemBuilder: (context, i) {
-        final p = featuredProducts[i];
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            final next = (i + 1) % featuredProducts.length;
-            _controller.animateToPage(next,
-                duration: AppTokens.transitionNormal, curve: Curves.easeInOut);
-          },
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: AppTokens.spacingSm, vertical: AppTokens.spacingXs),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppTokens.colorOrange,
-                borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-                border: Border.all(color: AppTokens.colorOrange),
-              ),
-              padding: EdgeInsets.all(AppTokens.spacingMd),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.smart_toy, size: 48, color: AppTokens.colorWhite),
-                  SizedBox(height: AppTokens.spacingSm),
-                  Text(p['name']!, style: AppTokens.headingSmall),
-                  SizedBox(height: AppTokens.spacingXs),
-                  Text(p['desc']!,
-                      textAlign: TextAlign.center, style: AppTokens.bodyLarge),
-                  SizedBox(height: AppTokens.spacingSm),
-                  Text(p['price']!, style: AppTokens.priceTag),
-                ],
-              ),
-            ),
+    return Column(
+      children: [
+        Expanded(
+          child: PageView.builder(
+            controller: _controller,
+            itemCount: featuredProducts.length,
+            onPageChanged: (idx) => setState(() => _index = idx),
+            itemBuilder: (context, i) {
+              final p = featuredProducts[i];
+              return Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: AppTokens.spacingSm,
+                    vertical: AppTokens.spacingXs),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppTokens.colorOrange,
+                    borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+                    border: Border.all(color: AppTokens.colorOrange),
+                  ),
+                  padding: EdgeInsets.all(AppTokens.spacingMd),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.smart_toy,
+                          size: 52, color: AppTokens.colorWhite),
+                      SizedBox(height: AppTokens.spacingSm),
+                      Text(p['name']!, style: AppTokens.headingSmall),
+                      SizedBox(height: AppTokens.spacingXs),
+                      Text(p['desc']!,
+                          textAlign: TextAlign.center,
+                          style: AppTokens.bodyLarge),
+                      SizedBox(height: AppTokens.spacingSm),
+                      Text(p['price']!, style: AppTokens.priceTag),
+                      SizedBox(height: AppTokens.spacingSm),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTokens.colorWhite,
+                          foregroundColor: AppTokens.colorOrange,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => ProductDetailsPage(
+                                productIndex: i,
+                                productName: p['name']!,
+                                productDesc: p['desc']!,
+                                productPrice: p['price']!,
+                              ),
+                            ),
+                          );
+                        },
+                        child:
+                            Text('View Product', style: AppTokens.labelLarge),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
-        );
-      },
+        ),
+        SizedBox(height: AppTokens.spacingSm),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(featuredProducts.length, (i) {
+            return Container(
+              margin: EdgeInsets.symmetric(horizontal: 4),
+              width: _index == i ? 14 : 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: _index == i
+                    ? AppTokens.colorOrange
+                    : AppTokens.colorLightGrey,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            );
+          }),
+        ),
+      ],
     );
   }
 }
@@ -891,39 +951,61 @@ class StorePage extends StatelessWidget {
     return Scaffold(
       appBar:
           buildAppBar(context, title: 'STORE - COMPANY NAME', isStore: true),
-      body: Column(
-        children: [
-          SizedBox(height: AppTokens.spacingXl),
-          TextType(
-            text: [
-              "What are you interested in?",
-              "have a look around",
-              "Happy Shopping",
-              "Sales are open soon!"
-            ],
-            typingSpeed: 75,
-            pauseDuration: 1500,
-            showCursor: true,
-            cursorCharacter: "|",
-            textStyle: AppTokens.headingSmall.copyWith(
-              color: AppTokens.colorOrange,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 180,
+            floating: false,
+            pinned: false,
+            backgroundColor: AppTokens.colorDarkGrey,
+            automaticallyImplyLeading: false,
+            flexibleSpace: FlexibleSpaceBar(
+              collapseMode: CollapseMode.parallax,
+              title: Container(
+                color: AppTokens.colorDarkGrey,
+                alignment: Alignment.center,
+                padding: EdgeInsets.symmetric(horizontal: AppTokens.spacingLg),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: AppTokens.spacingXs),
+                    TextType(
+                      text: [
+                        "What are you interested in?",
+                        "have a look around",
+                        "Happy Shopping",
+                        "Sales are open soon!"
+                      ],
+                      typingSpeed: 75,
+                      pauseDuration: 1500,
+                      showCursor: true,
+                      cursorCharacter: "|",
+                      textStyle: AppTokens.headingSmall.copyWith(
+                        color: AppTokens.colorOrange,
+                      ),
+                    ),
+                    SizedBox(height: AppTokens.spacingSm),
+                  ],
+                ),
+              ),
             ),
           ),
-          SizedBox(height: AppTokens.spacingLg),
-          Expanded(
-            child: GridView.builder(
-              padding: EdgeInsets.all(AppTokens.spacingLg),
+          SliverPadding(
+            padding: EdgeInsets.all(AppTokens.spacingLg),
+            sliver: SliverGrid(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  return AnimatedProductCard(
+                      index: index, delay: Duration.zero);
+                },
+                childCount: 30,
+              ),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 childAspectRatio: 0.8,
               ),
-              itemCount: 30,
-              itemBuilder: (context, index) {
-                return AnimatedProductCard(
-                    index: index, delay: Duration(milliseconds: 100 * index));
-              },
             ),
           ),
         ],
@@ -931,6 +1013,8 @@ class StorePage extends StatelessWidget {
     );
   }
 }
+
+// Header delegate used for the pinned animated banner in StorePage
 
 // Add this widget below _ProductCard:
 class AnimatedProductCard extends StatefulWidget {
@@ -953,7 +1037,7 @@ class _AnimatedProductCardState extends State<AnimatedProductCard>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: AppTokens.transitionFast,
       vsync: this,
     );
     _opacity = Tween<double>(begin: 0, end: 1).animate(
@@ -963,9 +1047,9 @@ class _AnimatedProductCardState extends State<AnimatedProductCard>
         Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
-    Future.delayed(widget.delay, () {
-      if (mounted) _controller.forward();
-    });
+    // Start immediately (no staggered per-item delay) to keep fade duration
+    // consistent across product widgets per QA requirements.
+    if (mounted) _controller.forward();
   }
 
   @override
@@ -1092,15 +1176,14 @@ class ShinyText extends StatefulWidget {
 
 class _ShinyTextState extends State<ShinyText>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  late final AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: Duration(seconds: widget.speed.toInt()),
-      vsync: this,
-    )..repeat();
+    _controller =
+        AnimationController(vsync: this, duration: AppTokens.transitionSlow)
+          ..repeat();
   }
 
   @override
@@ -1159,38 +1242,12 @@ class PixelTransitionCard extends StatefulWidget {
 
 class _PixelTransitionCardState extends State<PixelTransitionCard>
     with SingleTickerProviderStateMixin {
-  static const int gridSize = 7;
   bool _hovering = false;
-  bool _showText = false;
-  List<bool> _pixelVisible = List.generate(gridSize * gridSize, (_) => false);
+  // Replaced tiled pixel animation with a simple fade overlay.
+  // _hovering controls showing the overlay via AnimatedOpacity.
   late final AnimationController _bounceController;
   late final Animation<double> _scale;
   final Random _random = Random();
-
-  void _startPixelAnimation() async {
-    setState(() {
-      _pixelVisible = List.generate(gridSize * gridSize, (_) => false);
-      _showText = false;
-    });
-    final indices = List.generate(gridSize * gridSize, (i) => i)..shuffle();
-    for (final i in indices) {
-      await Future.delayed(const Duration(milliseconds: 8));
-      setState(() {
-        _pixelVisible[i] = true;
-      });
-    }
-    await Future.delayed(const Duration(milliseconds: 200));
-    setState(() {
-      _showText = true;
-    });
-  }
-
-  void _resetPixelAnimation() {
-    setState(() {
-      _pixelVisible = List.generate(gridSize * gridSize, (_) => false);
-      _showText = false;
-    });
-  }
 
   @override
   void initState() {
@@ -1229,11 +1286,9 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
     return MouseRegion(
       onEnter: (_) {
         setState(() => _hovering = true);
-        _startPixelAnimation();
       },
       onExit: (_) {
         setState(() => _hovering = false);
-        _resetPixelAnimation();
       },
       child: AnimatedContainer(
         duration: AppTokens.transitionSlow,
@@ -1309,66 +1364,50 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                 ),
               ),
             ),
-            // Pixel grid overlay (covers entire card)
+            // Simple fade overlay replacing tiled pixel animation
             if (_hovering)
               Positioned.fill(
-                child: Stack(
-                  children: [
-                    Column(
-                      children: List.generate(gridSize, (row) {
-                        return Expanded(
-                          child: Row(
-                            children: List.generate(gridSize, (col) {
-                              int i = row * gridSize + col;
-                              return Expanded(
-                                child: AnimatedOpacity(
-                                  opacity: _pixelVisible[i] ? 1 : 0,
-                                  duration: const Duration(milliseconds: 80),
-                                  child: Container(
-                                    margin: EdgeInsets.zero,
-                                    decoration: BoxDecoration(
-                                      color: AppTokens.colorOrange,
-                                      borderRadius: BorderRadius.circular(2),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }),
-                          ),
-                        );
-                      }),
-                    ),
-                    // Smooth fade-in for "Lorem Ipsum" after pixels
-                    if (_showText)
-                      AnimatedOpacity(
-                        opacity: _showText ? 1.0 : 0.0,
-                        duration: AppTokens.transitionNormal,
-                        child: Center(
-                          child: Container(
-                            alignment: Alignment.center,
-                            color:
-                                AppTokens.colorOrange.withValues(alpha: 0.85),
-                            child: Text(
-                              "Lorem Ipsum",
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: AppTokens.colorLightGrey,
-                                letterSpacing: 1.2,
-                                shadows: [
-                                  Shadow(
-                                    blurRadius: 8,
-                                    color: AppTokens.colorBlack
-                                        .withValues(alpha: 0.26),
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                            ),
+                child: AnimatedOpacity(
+                  opacity: _hovering ? 1.0 : 0.0,
+                  duration: AppTokens.transitionFast,
+                  child: Container(
+                    alignment: Alignment.center,
+                    color: AppTokens.colorOrange.withValues(alpha: 0.88),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          "Lorem Ipsum",
+                          style: AppTokens.headingSmall.copyWith(
+                            color: AppTokens.colorLightGrey,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
-                      ),
-                  ],
+                        SizedBox(height: AppTokens.spacingSm),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTokens.colorWhite),
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ProductDetailsPage(
+                                  productIndex: widget.index,
+                                  productName: 'Product ${widget.index + 1}',
+                                  productDesc:
+                                      'Short description of the product goes here.',
+                                  productPrice: '₱9,999',
+                                ),
+                              ),
+                            );
+                          },
+                          child: Text('View Product',
+                              style: GoogleFonts.poppins(
+                                  color: AppTokens.colorOrange,
+                                  fontWeight: FontWeight.w600)),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             // Bouncing View Product pill
