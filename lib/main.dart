@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'dart:math';
 import 'package:url_launcher/url_launcher.dart';
 import 'about_page.dart';
+import 'product_details_page.dart';
+import 'design_tokens.dart';
 
 Future<void> _launchEmail(String email, {String subject = ''}) async {
   final uri = Uri(
@@ -23,27 +25,7 @@ void main() {
       create: (_) => CartModel(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          brightness: Brightness.dark,
-          colorScheme: const ColorScheme.dark(
-            primary: Color(0xFFED5833),
-            secondary: Color(0xFFE3EEF1),
-          ),
-          scaffoldBackgroundColor: const Color(0xFF0D0D0D),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFFED5833),
-            foregroundColor: Colors.white,
-            elevation: 0,
-          ),
-          textTheme: GoogleFonts.poppinsTextTheme(),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFED5833)),
-          ),
-          textButtonTheme: TextButtonThemeData(
-            style: TextButton.styleFrom(foregroundColor: Colors.white),
-          ),
-        ),
+        theme: AppTokens.appTheme,
         home: const HomePage(),
       ),
     ),
@@ -122,12 +104,9 @@ class _SupportChatPageState extends State<SupportChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('Support',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        title: Text('Support', style: AppTokens.labelLarge),
         actions: [cartNavButton(context)],
       ),
       body: Column(
@@ -136,12 +115,14 @@ class _SupportChatPageState extends State<SupportChatPage> {
             child: _messages.isEmpty
                 ? Center(
                     child: Text('No messages yet — send us a question',
-                        style: GoogleFonts.openSans(color: Colors.white70)),
+                        style: AppTokens.bodyMedium.copyWith(
+                            color: AppTokens.colorWhite.withOpacity(0.7))),
                   )
                 : ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 16),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: AppTokens.spacingSm,
+                        vertical: AppTokens.spacingMd),
                     itemCount: _messages.length,
                     itemBuilder: (context, i) {
                       final item = _messages[i];
@@ -158,12 +139,13 @@ class _SupportChatPageState extends State<SupportChatPage> {
                         isUser = true;
                       }
 
-                      final bubbleColor = isUser ? Colors.black : primary;
-                      final textColor = Colors.white;
+                      final bubbleColor =
+                          isUser ? AppTokens.colorBlack : AppTokens.colorOrange;
 
                       // align right for user, left for support
                       return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        padding:
+                            EdgeInsets.symmetric(vertical: AppTokens.spacingXs),
                         child: Row(
                           mainAxisAlignment: isUser
                               ? MainAxisAlignment.end
@@ -174,20 +156,25 @@ class _SupportChatPageState extends State<SupportChatPage> {
                                   maxWidth:
                                       MediaQuery.of(context).size.width * 0.72),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 12),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: AppTokens.spacingSm,
+                                    vertical: AppTokens.spacingXs),
                                 decoration: BoxDecoration(
                                   color: bubbleColor,
                                   borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(isUser ? 12 : 4),
-                                    topRight: Radius.circular(isUser ? 4 : 12),
-                                    bottomLeft: const Radius.circular(12),
-                                    bottomRight: const Radius.circular(12),
+                                    topLeft: Radius.circular(
+                                        isUser ? AppTokens.radiusMd : 4),
+                                    topRight: Radius.circular(
+                                        isUser ? 4 : AppTokens.radiusMd),
+                                    bottomLeft:
+                                        Radius.circular(AppTokens.radiusMd),
+                                    bottomRight:
+                                        Radius.circular(AppTokens.radiusMd),
                                   ),
                                 ),
                                 child: Text(text,
-                                    style: GoogleFonts.openSans(
-                                        color: textColor, fontSize: 15)),
+                                    style: AppTokens.bodyMedium
+                                        .copyWith(color: AppTokens.colorWhite)),
                               ),
                             ),
                           ],
@@ -200,39 +187,43 @@ class _SupportChatPageState extends State<SupportChatPage> {
           // Input area — orange background text field and circular send icon
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: EdgeInsets.symmetric(
+                  horizontal: AppTokens.spacingSm,
+                  vertical: AppTokens.spacingXs),
               child: Row(
                 children: [
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: primary,
-                        borderRadius: BorderRadius.circular(28),
+                        color: AppTokens.colorOrange,
+                        borderRadius: BorderRadius.circular(AppTokens.radiusXl),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: AppTokens.spacingSm),
                       child: TextField(
                         controller: _ctrl,
-                        style: GoogleFonts.openSans(color: Colors.white),
-                        cursorColor: Colors.white,
+                        style: AppTokens.bodyMedium
+                            .copyWith(color: AppTokens.colorWhite),
+                        cursorColor: AppTokens.colorWhite,
                         textInputAction: TextInputAction.send,
                         decoration: InputDecoration(
                           hintText: 'Type your message...',
-                          hintStyle:
-                              GoogleFonts.openSans(color: Colors.white70),
+                          hintStyle: AppTokens.bodyMedium.copyWith(
+                              color: AppTokens.colorWhite.withOpacity(0.7)),
                           border: InputBorder.none,
                         ),
                         onSubmitted: (_) => _sendMessage(),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: AppTokens.spacingXs),
                   // larger tappable send 'blobb' — uses InkWell to ensure
                   // taps are registered across platforms (web included)
                   Container(
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: primary,
+                      color: AppTokens.colorOrange,
                       shape: BoxShape.circle,
                     ),
                     child: InkWell(
@@ -241,8 +232,8 @@ class _SupportChatPageState extends State<SupportChatPage> {
                         if (_ctrl.text.trim().isEmpty) return;
                         _sendMessage();
                       },
-                      child: const Center(
-                        child: Icon(Icons.send, color: Colors.white),
+                      child: Center(
+                        child: Icon(Icons.send, color: AppTokens.colorWhite),
                       ),
                     ),
                   ),
@@ -270,52 +261,47 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: AppTokens.colorBlack,
         title: ShinyText(
           text: 'COMPANY NAME',
           speed: 3,
           style: GoogleFonts.montserrat(
             fontSize: 22,
             fontWeight: FontWeight.w800,
-            color: const Color(0xFFE3EEF1),
+            color: AppTokens.colorLightGrey,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () {},
-            child:
-                Text('Home', style: GoogleFonts.poppins(color: Colors.white)),
+            child: Text('Home', style: AppTokens.labelLarge),
           ),
           TextButton(
             onPressed: () {
               Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const StorePage()));
             },
-            child:
-                Text('Store', style: GoogleFonts.poppins(color: Colors.white)),
+            child: Text('Store', style: AppTokens.labelLarge),
           ),
           TextButton(
             onPressed: () {
               Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const SupportChatPage()));
             },
-            child: Text('Support',
-                style: GoogleFonts.poppins(color: Colors.white)),
+            child: Text('Support', style: AppTokens.labelLarge),
           ),
           TextButton(
             onPressed: () {
               _launchEmail('support@company.com', subject: 'Support request');
             },
-            child: Text('Contact',
-                style: GoogleFonts.poppins(color: Colors.white)),
+            child: Text('Contact', style: AppTokens.labelLarge),
           ),
           TextButton(
             onPressed: () {
               Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const AboutPage()));
             },
-            child:
-                Text('About', style: GoogleFonts.poppins(color: Colors.white)),
+            child: Text('About', style: AppTokens.labelLarge),
           ),
           cartNavButton(context),
         ],
@@ -331,37 +317,35 @@ class _HomePageState extends State<HomePage> {
               return Container(
                 width: double.infinity,
                 height: height,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                color: const Color(0xFFED5833),
+                padding: EdgeInsets.symmetric(horizontal: AppTokens.spacingLg),
+                color: AppTokens.colorOrange,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AnimatedSplitText(
                       text: 'Discover the Future of Robotics',
-                      style: GoogleFonts.poppins(
-                          fontSize: 56,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white),
+                      style: AppTokens.headingLarge,
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: AppTokens.spacingSm),
                     TextType(
                       text: [
                         'AI-powered machines designed to revolutionize everyday life.'
                       ],
                       typingSpeed: 40,
                       pauseDuration: 1800,
-                      textStyle: GoogleFonts.openSans(
-                          fontSize: 18, color: Colors.white70),
+                      textStyle: AppTokens.bodyLarge,
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: AppTokens.spacingLg),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 14),
+                          backgroundColor: AppTokens.colorWhite,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: AppTokens.spacingLg,
+                              vertical: AppTokens.spacingMd),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(28))),
+                              borderRadius:
+                                  BorderRadius.circular(AppTokens.radiusXl))),
                       onPressed: () {
                         Navigator.push(
                             context,
@@ -370,7 +354,7 @@ class _HomePageState extends State<HomePage> {
                       },
                       child: Text('Explore Our Products',
                           style: GoogleFonts.poppins(
-                              color: const Color(0xFFED5833),
+                              color: AppTokens.colorOrange,
                               fontSize: 16,
                               fontWeight: FontWeight.w600)),
                     ),
@@ -378,18 +362,14 @@ class _HomePageState extends State<HomePage> {
                 ),
               );
             }),
-            const SizedBox(height: 32),
+            SizedBox(height: AppTokens.spacingXl),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text('Featured Products',
-                  style: GoogleFonts.poppins(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFFED5833))),
+              padding: EdgeInsets.symmetric(horizontal: AppTokens.spacingMd),
+              child: Text('Featured Products', style: AppTokens.headingMedium),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: AppTokens.spacingSm),
             SizedBox(height: 260, child: const FutureProductCarousel()),
-            const SizedBox(height: 24),
+            SizedBox(height: AppTokens.spacingLg),
             Center(
               child: ElevatedButton(
                 onPressed: () {
@@ -397,28 +377,26 @@ class _HomePageState extends State<HomePage> {
                       MaterialPageRoute(builder: (_) => const StorePage()));
                 },
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFED5833)),
-                child: Text('View All Products',
-                    style: GoogleFonts.poppins(color: Colors.white)),
+                    backgroundColor: AppTokens.colorOrange),
+                child: Text('View All Products', style: AppTokens.labelLarge),
               ),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: AppTokens.spacing2xl),
             // CTA
             Container(
               width: double.infinity,
-              color: const Color(0xFF1A1A1A),
-              padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+              color: AppTokens.colorDarkGrey,
+              padding: EdgeInsets.symmetric(
+                  vertical: AppTokens.spacingXl,
+                  horizontal: AppTokens.spacingLg),
               child: Column(
                 children: [
                   Text('Join the Future of Robotics',
-                      style: GoogleFonts.poppins(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white)),
-                  const SizedBox(height: 8),
+                      style: AppTokens.headingSmall),
+                  SizedBox(height: AppTokens.spacingXs),
                   Text(
                       'Collaborate, invest, or explore our latest breakthroughs in AI automation.',
-                      style: GoogleFonts.openSans(color: Colors.white70)),
+                      style: AppTokens.bodyLarge),
                 ],
               ),
             ),
@@ -469,7 +447,7 @@ class _FutureProductCarouselState extends State<FutureProductCarousel> {
     if (!mounted) return;
     _index = (_index + 1) % featuredProducts.length;
     _controller.animateToPage(_index,
-        duration: const Duration(milliseconds: 600), curve: Curves.easeInOut);
+        duration: AppTokens.transitionSlow, curve: Curves.easeInOut);
     Future.delayed(const Duration(seconds: 4), _autoScroll);
   }
 
@@ -485,38 +463,29 @@ class _FutureProductCarouselState extends State<FutureProductCarousel> {
           onTap: () {
             final next = (i + 1) % featuredProducts.length;
             _controller.animateToPage(next,
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeInOut);
+                duration: AppTokens.transitionNormal, curve: Curves.easeInOut);
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: EdgeInsets.symmetric(
+                horizontal: AppTokens.spacingSm, vertical: AppTokens.spacingXs),
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFED5833),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFED5833)),
+                color: AppTokens.colorOrange,
+                borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+                border: Border.all(color: AppTokens.colorOrange),
               ),
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(AppTokens.spacingMd),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.smart_toy, size: 48, color: Colors.white),
-                  const SizedBox(height: 12),
-                  Text(p['name']!,
-                      style: GoogleFonts.poppins(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white)),
-                  const SizedBox(height: 8),
+                  Icon(Icons.smart_toy, size: 48, color: AppTokens.colorWhite),
+                  SizedBox(height: AppTokens.spacingSm),
+                  Text(p['name']!, style: AppTokens.headingSmall),
+                  SizedBox(height: AppTokens.spacingXs),
                   Text(p['desc']!,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.openSans(color: Colors.white70)),
-                  const SizedBox(height: 12),
-                  Text(p['price']!,
-                      style: GoogleFonts.openSans(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700)),
+                      textAlign: TextAlign.center, style: AppTokens.bodyLarge),
+                  SizedBox(height: AppTokens.spacingSm),
+                  Text(p['price']!, style: AppTokens.priceTag),
                 ],
               ),
             ),
@@ -813,7 +782,7 @@ class _CartPageState extends State<CartPage> {
                 (route) => false,
               );
             },
-            child: const Text('Home', style: TextStyle(color: Colors.white)),
+            child: Text('Home', style: AppTokens.labelLarge),
           ),
           TextButton(
             onPressed: () {
@@ -822,7 +791,7 @@ class _CartPageState extends State<CartPage> {
                 (route) => false,
               );
             },
-            child: const Text('Store', style: TextStyle(color: Colors.white)),
+            child: Text('Store', style: AppTokens.labelLarge),
           ),
           TextButton(
             onPressed: () {
@@ -831,7 +800,7 @@ class _CartPageState extends State<CartPage> {
                     builder: (context) => const SupportChatPage()),
               );
             },
-            child: const Text('Support', style: TextStyle(color: Colors.white)),
+            child: Text('Support', style: AppTokens.labelLarge),
           ),
           TextButton(
             onPressed: () {
@@ -839,7 +808,7 @@ class _CartPageState extends State<CartPage> {
                 MaterialPageRoute(builder: (context) => const AboutPage()),
               );
             },
-            child: const Text('About', style: TextStyle(color: Colors.white)),
+            child: Text('About', style: AppTokens.labelLarge),
           ),
         ],
       ),
@@ -852,7 +821,7 @@ class _CartPageState extends State<CartPage> {
         child: Stack(
           children: [
             ListView.builder(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(AppTokens.spacingLg),
               itemCount: cart.cartItems.length,
               itemBuilder: (context, i) {
                 final idx = cart.cartItems[i];
@@ -874,8 +843,8 @@ class _CartPageState extends State<CartPage> {
               top: _buttonOffset.dy,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFED5833),
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppTokens.colorOrange,
+                  foregroundColor: AppTokens.colorWhite,
                 ),
                 onPressed: cart.cartItems.isEmpty
                     ? null
@@ -901,7 +870,7 @@ Widget cartNavButton(BuildContext context) {
   return Stack(
     children: [
       IconButton(
-        icon: const Icon(Icons.shopping_cart, color: Colors.white),
+        icon: Icon(Icons.shopping_cart, color: AppTokens.colorWhite),
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => const CartPage()),
@@ -912,14 +881,14 @@ Widget cartNavButton(BuildContext context) {
         Positioned(
           right: 0,
           child: Container(
-            padding: const EdgeInsets.all(2),
+            padding: EdgeInsets.all(AppTokens.spacing2xs),
             decoration: const BoxDecoration(
               color: Colors.red,
               shape: BoxShape.circle,
             ),
             child: Text(
               '${cart.cartItems.length}',
-              style: const TextStyle(color: Color(0xFFE3EEF1), fontSize: 12),
+              style: TextStyle(color: AppTokens.colorLightGrey, fontSize: 12),
             ),
           ),
         ),
@@ -941,7 +910,7 @@ class StorePage extends StatelessWidget {
           style: GoogleFonts.montserrat(
               fontSize: 28,
               fontWeight: FontWeight.w800,
-              color: const Color(0xFFE3EEF1)),
+              color: AppTokens.colorLightGrey),
         ),
         actions: [
           TextButton(
@@ -952,12 +921,14 @@ class StorePage extends StatelessWidget {
               );
             },
             child: Text('Home',
-                style: GoogleFonts.poppins(color: const Color(0xFFE3EEF1))),
+                style: AppTokens.labelLarge
+                    .copyWith(color: AppTokens.colorLightGrey)),
           ),
           TextButton(
             onPressed: () {},
             child: Text('Store',
-                style: GoogleFonts.poppins(color: const Color(0xFFE3EEF1))),
+                style: AppTokens.labelLarge
+                    .copyWith(color: AppTokens.colorLightGrey)),
           ),
           TextButton(
             onPressed: () {
@@ -967,7 +938,8 @@ class StorePage extends StatelessWidget {
               );
             },
             child: Text('Support',
-                style: GoogleFonts.poppins(color: const Color(0xFFE3EEF1))),
+                style: AppTokens.labelLarge
+                    .copyWith(color: AppTokens.colorLightGrey)),
           ),
           TextButton(
             onPressed: () {
@@ -976,14 +948,15 @@ class StorePage extends StatelessWidget {
               );
             },
             child: Text('About',
-                style: GoogleFonts.poppins(color: const Color(0xFFE3EEF1))),
+                style: AppTokens.labelLarge
+                    .copyWith(color: AppTokens.colorLightGrey)),
           ),
           cartNavButton(context),
         ],
       ),
       body: Column(
         children: [
-          const SizedBox(height: 32),
+          SizedBox(height: AppTokens.spacingXl),
           TextType(
             text: [
               "What are you interested in?",
@@ -995,16 +968,14 @@ class StorePage extends StatelessWidget {
             pauseDuration: 1500,
             showCursor: true,
             cursorCharacter: "|",
-            textStyle: GoogleFonts.poppins(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFFED5833),
+            textStyle: AppTokens.headingSmall.copyWith(
+              color: AppTokens.colorOrange,
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: AppTokens.spacingLg),
           Expanded(
             child: GridView.builder(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(AppTokens.spacingLg),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
                 crossAxisSpacing: 16,
@@ -1095,15 +1066,15 @@ class _ProductCardState extends State<_ProductCard> {
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() => _hovering = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: AppTokens.transitionFast,
         curve: Curves.easeOut,
         decoration: BoxDecoration(
-          color: const Color(0xFFE3EEF1),
-          borderRadius: BorderRadius.circular(16),
+          color: AppTokens.colorLightGrey,
+          borderRadius: BorderRadius.circular(AppTokens.radiusLg),
           boxShadow: _hovering
               ? [
                   BoxShadow(
-                    color: const Color(0xFFED5833).withOpacity(0.3),
+                    color: AppTokens.colorOrange.withValues(alpha: 0.3),
                     blurRadius: 16,
                     spreadRadius: 2,
                     offset: const Offset(0, 8),
@@ -1111,35 +1082,35 @@ class _ProductCardState extends State<_ProductCard> {
                 ]
               : [
                   BoxShadow(
-                    color: const Color(0xFF232828).withOpacity(0.12),
+                    color: AppTokens.colorBlack.withValues(alpha: 0.12),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
                 ],
           border: _hovering
-              ? Border.all(color: const Color(0xFFED5833), width: 2)
+              ? Border.all(color: AppTokens.colorOrange, width: 2)
               : Border.all(color: Colors.transparent, width: 2),
         ),
-        margin: const EdgeInsets.all(4),
+        margin: EdgeInsets.all(AppTokens.spacing2xs),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.smart_toy, size: 48, color: Color(0xFFED5833)),
-            const SizedBox(height: 12),
+            Icon(Icons.smart_toy, size: 48, color: AppTokens.colorOrange),
+            SizedBox(height: AppTokens.spacingSm),
             Text(
               'Product ${widget.index + 1}',
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF232828),
+                color: AppTokens.colorBlack,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: AppTokens.spacingXs),
             Text(
               'Short description of the product goes here.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.openSans(color: const Color(0xFF232828)),
+              style: GoogleFonts.openSans(color: AppTokens.colorBlack),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: AppTokens.spacingXs),
             ElevatedButton(
               onPressed: () async {
                 final url = Uri.parse('https://shopee.ph/product/1234567890');
@@ -1210,10 +1181,10 @@ class _ShinyTextState extends State<ShinyText>
         return ShaderMask(
           shaderCallback: (Rect bounds) {
             return LinearGradient(
-              colors: const [
-                Color(0xFFE3EEF1),
-                Color(0xFFED5833),
-                Color(0xFFE3EEF1)
+              colors: [
+                AppTokens.colorLightGrey,
+                AppTokens.colorOrange,
+                AppTokens.colorLightGrey
               ],
               stops: [
                 (_controller.value - 0.2).clamp(0.0, 1.0),
@@ -1287,7 +1258,7 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
     super.initState();
     _bounceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 260),
+      duration: AppTokens.transitionNormal,
     );
     _scale = Tween<double>(begin: 1.0, end: 1.12).animate(
         CurvedAnimation(parent: _bounceController, curve: Curves.easeOut));
@@ -1326,20 +1297,20 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
         _resetPixelAnimation();
       },
       child: AnimatedContainer(
-        duration: const Duration(seconds: 2),
+        duration: AppTokens.transitionSlow,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: _hovering
-                ? [Color(0xFFED5833), Colors.teal]
+                ? [AppTokens.colorOrange, AppTokens.colorTeal]
                 : [Colors.white, Colors.grey.shade100],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTokens.radiusLg),
           boxShadow: _hovering
               ? [
                   BoxShadow(
-                    color: Color(0xFFED5833).withOpacity(0.3),
+                    color: AppTokens.colorOrange.withValues(alpha: 0.3),
                     blurRadius: 16,
                     spreadRadius: 2,
                     offset: const Offset(0, 8),
@@ -1347,37 +1318,38 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                 ]
               : [
                   BoxShadow(
-                    color: Color(0xFF232828).withOpacity(0.12),
+                    color: AppTokens.colorBlack.withValues(alpha: 0.12),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
                 ],
           border: _hovering
-              ? Border.all(color: Color(0xFFED5833), width: 2)
+              ? Border.all(color: AppTokens.colorOrange, width: 2)
               : Border.all(color: Colors.transparent, width: 2),
         ),
-        margin: const EdgeInsets.all(4),
+        margin: EdgeInsets.all(AppTokens.spacing2xs),
         child: Stack(
           children: [
             // Card content
             AnimatedOpacity(
               opacity: _hovering ? 0.0 : 1.0,
-              duration: const Duration(milliseconds: 200),
+              duration: AppTokens.transitionFast,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.smart_toy, size: 48, color: Color(0xFFED5833)),
-                    const SizedBox(height: 12),
+                    Icon(Icons.smart_toy,
+                        size: 48, color: AppTokens.colorOrange),
+                    SizedBox(height: AppTokens.spacingSm),
                     Text('Product ${widget.index + 1}',
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF232828))),
-                    const SizedBox(height: 8),
-                    const Text('Short description of the product goes here.',
+                            color: AppTokens.colorBlack)),
+                    SizedBox(height: AppTokens.spacingXs),
+                    Text('Short description of the product goes here.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Color(0xFF232828))),
-                    const SizedBox(height: 8),
+                        style: TextStyle(color: AppTokens.colorBlack)),
+                    SizedBox(height: AppTokens.spacingXs),
                     ElevatedButton(
                       onPressed: () async {
                         final url =
@@ -1414,7 +1386,7 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                                   child: Container(
                                     margin: EdgeInsets.zero,
                                     decoration: BoxDecoration(
-                                      color: Color(0xFFED5833),
+                                      color: AppTokens.colorOrange,
                                       borderRadius: BorderRadius.circular(2),
                                     ),
                                   ),
@@ -1429,22 +1401,24 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                     if (_showText)
                       AnimatedOpacity(
                         opacity: _showText ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 300),
+                        duration: AppTokens.transitionNormal,
                         child: Center(
                           child: Container(
                             alignment: Alignment.center,
-                            color: Color(0xFFED5833).withOpacity(0.85),
+                            color:
+                                AppTokens.colorOrange.withValues(alpha: 0.85),
                             child: Text(
                               "Lorem Ipsum",
                               style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFFE3EEF1),
+                                color: AppTokens.colorLightGrey,
                                 letterSpacing: 1.2,
                                 shadows: [
                                   Shadow(
                                     blurRadius: 8,
-                                    color: Color(0xFF232828).withOpacity(0.26),
+                                    color: AppTokens.colorBlack
+                                        .withValues(alpha: 0.26),
                                     offset: Offset(0, 2),
                                   ),
                                 ],
@@ -1474,14 +1448,15 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 18, vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: AppTokens.spacingLg,
+                          vertical: AppTokens.spacingXs),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFED5833),
-                        borderRadius: BorderRadius.circular(28),
+                        color: AppTokens.colorOrange,
+                        borderRadius: BorderRadius.circular(AppTokens.radiusXl),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF232828).withOpacity(0.2),
+                            color: AppTokens.colorBlack.withValues(alpha: 0.2),
                             blurRadius: 12,
                             offset: const Offset(0, 6),
                           ),
@@ -1490,7 +1465,7 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                       child: Text('Buy Now',
                           style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w600,
-                              color: Colors.white)),
+                              color: AppTokens.colorWhite)),
                     ),
                   ),
                 ),

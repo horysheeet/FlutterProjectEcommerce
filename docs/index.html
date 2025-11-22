@@ -1,43 +1,38 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="website_for_kuya">
-    <title>website_for_kuya</title>
-  </head>
-  <body>
-    <!--
-      Offline-friendly index: sets a minimal build config and invokes the
-      Flutter loader directly. This avoids service worker registration and the
-      bootstrap script so the file can be opened via file:// in many browsers.
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
 
-      Note: Some browsers restrict WebAssembly or other features when using
-      file://. If parts of the app rely on CanvasKit/WASM they may still fail.
-      Serving the folder over HTTP is the most robust option.
-    -->
-    <script>
-      window._flutter = window._flutter || {};
-      // Minimal build config: point to the JS entrypoint and request the HTML renderer.
-      window._flutter.buildConfig = {
-        "engineRevision": "d2913632a4578ee4d0b8b1c4a69888c8a0672c4b",
-        "builds": [{
-          "compileTarget": "dart2js",
-          "renderer": "html",
-          "mainJsPath": "main.dart.js"
-        }]
-      };
-    </script>
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
 
-    <script src="flutter.js"></script>
-    <script>
-      // Call the loader to initialize the app using the minimal buildConfig above.
-      if (window._flutter && window._flutter.loader && typeof window._flutter.loader.load === 'function') {
-        window._flutter.loader.load();
-      } else {
-        console.error('Flutter loader not available.');
-      }
-    </script>
-  </body>
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="website_for_kuya">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>website_for_kuya</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
 </html>
