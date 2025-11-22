@@ -184,7 +184,8 @@ class _SupportChatPageState extends State<SupportChatPage> {
                 ? Center(
                     child: Text('No messages yet — send us a question',
                         style: AppTokens.bodyMedium.copyWith(
-                            color: AppTokens.colorWhite.withOpacity(0.7))),
+                            color:
+                                AppTokens.colorWhite.withValues(alpha: 0.7))),
                   )
                 : ListView.builder(
                     controller: _scrollController,
@@ -277,7 +278,8 @@ class _SupportChatPageState extends State<SupportChatPage> {
                         decoration: InputDecoration(
                           hintText: 'Type your message...',
                           hintStyle: AppTokens.bodyMedium.copyWith(
-                              color: AppTokens.colorWhite.withOpacity(0.7)),
+                              color:
+                                  AppTokens.colorWhite.withValues(alpha: 0.7)),
                           border: InputBorder.none,
                         ),
                         onSubmitted: (_) => _sendMessage(),
@@ -560,7 +562,7 @@ class _StoreMenuButtonState extends State<StoreMenuButton> {
                     const BorderRadius.vertical(bottom: Radius.circular(8)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: Offset(0, 4),
                   ),

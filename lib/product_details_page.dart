@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'design_tokens.dart';
 import 'main.dart';
@@ -31,11 +30,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         MediaQuery.of(context).size.width < AppTokens.breakpointTablet;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Product Details',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-        actions: [cartNavButton(context)],
-      ),
+      appBar: buildAppBar(context, title: 'Product Details'),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

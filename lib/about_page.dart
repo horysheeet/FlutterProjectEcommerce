@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'design_tokens.dart';
+import 'main.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -85,39 +87,10 @@ class _AboutPageState extends State<AboutPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
-      appBar: AppBar(
-        title: Text(
-          'About Us',
-          style: GoogleFonts.montserrat(
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: const Color(0xFFED5833),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child:
-                Text('Home', style: GoogleFonts.poppins(color: Colors.white)),
-          ),
-          TextButton(
-            onPressed: () async {
-              final uri = Uri(
-                  scheme: 'mailto',
-                  path: 'support@company.com',
-                  queryParameters: {'subject': 'About page inquiry'});
-              await launchUrl(uri);
-            },
-            child: Text('Contact',
-                style: GoogleFonts.poppins(color: Colors.white)),
-          ),
-        ],
-      ),
+      backgroundColor: AppTokens.colorBlack,
+      appBar: buildAppBar(context, title: 'About Us'),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(AppTokens.spacingLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -127,32 +100,28 @@ class _AboutPageState extends State<AboutPage> {
                 children: [
                   Text(
                     "About Company Name",
-                    style: GoogleFonts.montserrat(
+                    style: AppTokens.headingLarge.copyWith(
                       fontSize: 42,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFFED5833),
+                      color: AppTokens.colorOrange,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppTokens.spacingSm),
                   Text(
                     "Discover the minds shaping the future of robotics.",
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      color: Colors.white70,
-                    ),
+                    style: AppTokens.bodyLarge,
                     textAlign: TextAlign.center,
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: AppTokens.spacing2xl),
 
             // --- Mission / Vision / Tech / Testimonials / Contact ---
             _sectionTitle("Our Mission"),
             _sectionText(
               "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: AppTokens.spacingLg),
 
             _sectionTitle("Our Vision"),
             _sectionText(
