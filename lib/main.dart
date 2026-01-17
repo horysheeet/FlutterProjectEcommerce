@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'dart:math';
 import 'package:url_launcher/url_launcher.dart';
 import 'about_page.dart';
-import 'product_details_page.dart';
 import 'design_tokens.dart';
 
 Future<void> _launchEmail(String email, {String subject = ''}) async {
@@ -16,6 +14,37 @@ Future<void> _launchEmail(String email, {String subject = ''}) async {
   if (!await launchUrl(uri)) {
     // ignore: use_build_context_synchronously
     // couldn't launch mail app - show snackbar via context when available
+  }
+}
+
+/// Launch Shopee product URL in external browser
+Future<void> _launchShopeeUrl(String productId, BuildContext context) async {
+  // Example Shopee URL structure - replace with actual store URLs
+  final uri = Uri.parse('https://shopee.ph/product/$productId');
+  
+  try {
+    final launched = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+    
+    if (!launched && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to open Shopee. Please try again.'),
+          backgroundColor: AppTokens.colorRed,
+        ),
+      );
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error opening Shopee'),
+          backgroundColor: AppTokens.colorRed,
+        ),
+      );
+    }
   }
 }
 
@@ -85,20 +114,16 @@ PreferredSizeWidget buildAppBar(
         },
         child: Text('About', style: AppTokens.labelLarge),
       ),
-      cartNavButton(context),
     ],
   );
 }
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => CartModel(),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: AppTokens.appTheme,
-        home: const HomePage(),
-      ),
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: AppTokens.appTheme,
+      home: const HomePage(),
     ),
   );
 }
@@ -489,16 +514,18 @@ class _FeaturedProductsCarouselState extends State<FeaturedProductsCarousel> {
                                 ),
                               ),
                               onPressed: () {
-                                // Navigate to product details
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('${product.name} selected'),
-                                  ),
-                                );
+                                _launchShopeeUrl('featured-$index', context);
                               },
-                              child: Text(
-                                'View Product',
-                                style: AppTokens.labelLarge,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Buy on Shopee',
+                                    style: AppTokens.labelLarge,
+                                  ),
+                                  SizedBox(width: AppTokens.spacingXs),
+                                  Icon(Icons.open_in_new, size: 16),
+                                ],
                               ),
                             ),
                           ),
@@ -577,11 +604,38 @@ class _HomePageState extends State<HomePage> {
                     // This TextType stays fixed at the top now
                     TextType(
                       text: [
-                        'AI-powered machines designed to revolutionize everyday life.'
+                        'Browse our catalog. All purchases securely completed on Shopee.'
                       ],
                       typingSpeed: 40,
                       pauseDuration: 1800,
                       textStyle: AppTokens.bodyLarge,
+                    ),
+                    SizedBox(height: AppTokens.spacingSm),
+                    // Shopee Disclosure Badge
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppTokens.spacingMd,
+                        vertical: AppTokens.spacingSm,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTokens.colorWhite.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+                        border: Border.all(
+                          color: AppTokens.colorWhite.withValues(alpha: 0.5),
+                          width: 2,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.shopping_bag, color: AppTokens.colorWhite, size: 20),
+                          SizedBox(width: AppTokens.spacingXs),
+                          Text(
+                            'Available on Shopee',
+                            style: AppTokens.labelLarge,
+                          ),
+                        ],
+                      ),
                     ),
                     SizedBox(height: AppTokens.spacingLg),
                     ElevatedButton(
@@ -599,7 +653,7 @@ class _HomePageState extends State<HomePage> {
                             MaterialPageRoute(
                                 builder: (_) => const StorePage()));
                       },
-                      child: Text('Explore Our Products',
+                      child: Text('Browse Catalog',
                           style: GoogleFonts.poppins(
                               color: AppTokens.colorOrange,
                               fontSize: 16,
@@ -757,19 +811,17 @@ class _FutureProductCarouselState extends State<FutureProductCarousel> {
                           foregroundColor: AppTokens.colorOrange,
                         ),
                         onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => ProductDetailsPage(
-                                productIndex: i,
-                                productName: p['name']!,
-                                productDesc: p['desc']!,
-                                productPrice: p['price']!,
-                              ),
-                            ),
-                          );
+                          _launchShopeeUrl('featured-product-$i', context);
                         },
-                        child:
-                            Text('View Product', style: AppTokens.labelLarge),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('View on Shopee', style: AppTokens.labelLarge),
+                            SizedBox(width: AppTokens.spacingXs),
+                            Icon(Icons.open_in_new, size: 16),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -967,7 +1019,6 @@ class _AnimatedSplitTextState extends State<AnimatedSplitText>
   }
 }
 
-// Cart Model
 // Typing animation used in StorePage and elsewhere
 class TextType extends StatefulWidget {
   final List<String> text;
@@ -1041,127 +1092,7 @@ class _TextTypeState extends State<TextType> {
   }
 }
 
-class CartModel extends ChangeNotifier {
-  final List<int> _cartItems = [];
-  List<int> get cartItems => _cartItems;
-
-  void addToCart(int index) {
-    _cartItems.add(index);
-    notifyListeners();
-  }
-
-  void removeFromCart(int index) {
-    _cartItems.remove(index);
-    notifyListeners();
-  }
-
-  void clearCart() {
-    _cartItems.clear();
-    notifyListeners();
-  }
-}
-
-// Cart Page Widget
-class CartPage extends StatefulWidget {
-  const CartPage({super.key});
-
-  @override
-  State<CartPage> createState() => _CartPageState();
-}
-
-class _CartPageState extends State<CartPage> {
-  Offset _buttonOffset = const Offset(100, 100);
-
-  @override
-  Widget build(BuildContext context) {
-    final cart = Provider.of<CartModel>(context);
-    return Scaffold(
-      appBar: buildAppBar(context, title: 'Your Cart'),
-      body: Listener(
-        onPointerHover: (event) {
-          setState(() {
-            _buttonOffset = event.localPosition;
-          });
-        },
-        child: Stack(
-          children: [
-            ListView.builder(
-              padding: EdgeInsets.all(AppTokens.spacingLg),
-              itemCount: cart.cartItems.length,
-              itemBuilder: (context, i) {
-                final idx = cart.cartItems[i];
-                return Card(
-                  child: ListTile(
-                    title: Text('Product ${idx + 1}'),
-                    subtitle: const Text(
-                        'Short description of the product goes here.'),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.remove_shopping_cart),
-                      onPressed: () => cart.removeFromCart(idx),
-                    ),
-                  ),
-                );
-              },
-            ),
-            Positioned(
-              left: _buttonOffset.dx,
-              top: _buttonOffset.dy,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTokens.colorOrange,
-                  foregroundColor: AppTokens.colorWhite,
-                ),
-                onPressed: cart.cartItems.isEmpty
-                    ? null
-                    : () {
-                        cart.clearCart();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Purchase successful!')),
-                        );
-                      },
-                child: const Text('Checkout'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Update navigation bars in HomePage, StorePage, SupportChatPage to include Cart icon:
-Widget cartNavButton(BuildContext context) {
-  final cart = Provider.of<CartModel>(context);
-  return Stack(
-    children: [
-      IconButton(
-        icon: Icon(Icons.shopping_cart, color: AppTokens.colorWhite),
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const CartPage()),
-          );
-        },
-      ),
-      if (cart.cartItems.isNotEmpty)
-        Positioned(
-          right: 0,
-          child: Container(
-            padding: EdgeInsets.all(AppTokens.spacing2xs),
-            decoration: const BoxDecoration(
-              color: Colors.red,
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              '${cart.cartItems.length}',
-              style: TextStyle(color: AppTokens.colorLightGrey, fontSize: 12),
-            ),
-          ),
-        ),
-    ],
-  );
-}
-
-// Example for StorePage (repeat for other pages):
+// StorePage - Browse catalog with Shopee redirects
 class StorePage extends StatelessWidget {
   const StorePage({super.key});
 
@@ -1188,20 +1119,42 @@ class StorePage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(height: AppTokens.spacingXs),
-                    TextType(
-                      text: [
-                        "What are you interested in?",
-                        "have a look around",
-                        "Happy Shopping",
-                        "Sales are open soon!"
+                    Column(
+                      children: [
+                        TextType(
+                          text: [
+                            "Browse Our Catalog",
+                            "Find Your Perfect Product",
+                            "Shop on Shopee",
+                            "Secure Checkout on Shopee"
+                          ],
+                          typingSpeed: 75,
+                          pauseDuration: 1500,
+                          showCursor: true,
+                          cursorCharacter: "|",
+                          textStyle: AppTokens.headingSmall.copyWith(
+                            color: AppTokens.colorOrange,
+                          ),
+                        ),
+                        SizedBox(height: AppTokens.spacingSm),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppTokens.spacingMd,
+                            vertical: AppTokens.spacingXs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTokens.colorOrange.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+                          ),
+                          child: Text(
+                            '🛍️ All purchases completed on Shopee',
+                            style: AppTokens.bodySmall.copyWith(
+                              color: AppTokens.colorWhite,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       ],
-                      typingSpeed: 75,
-                      pauseDuration: 1500,
-                      showCursor: true,
-                      cursorCharacter: "|",
-                      textStyle: AppTokens.headingSmall.copyWith(
-                        color: AppTokens.colorOrange,
-                      ),
                     ),
                     SizedBox(height: AppTokens.spacingSm),
                   ],
@@ -1346,26 +1299,26 @@ class _ProductCardState extends State<_ProductCard> {
             ),
             SizedBox(height: AppTokens.spacingXs),
             Text(
-              'Short description of the product goes here.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.openSans(color: AppTokens.colorBlack),
+              '₱9,999',
+              style: GoogleFonts.openSans(
+                color: AppTokens.colorBlack,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
             SizedBox(height: AppTokens.spacingXs),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => ProductDetailsPage(
-                      productIndex: widget.index,
-                      productName: 'Product ${widget.index + 1}',
-                      productDesc:
-                          'Short description of the product goes here.',
-                      productPrice: '₱9,999',
-                    ),
-                  ),
-                );
+                _launchShopeeUrl('product-${widget.index}', context);
               },
-              child: Text('View Product', style: GoogleFonts.openSans()),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('View on Shopee', style: GoogleFonts.openSans()),
+                  SizedBox(width: AppTokens.spacingXs),
+                  Icon(Icons.open_in_new, size: 14),
+                ],
+              ),
             ),
           ],
         ),
@@ -1559,25 +1512,43 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                             fontWeight: FontWeight.bold,
                             color: AppTokens.colorBlack)),
                     SizedBox(height: AppTokens.spacingXs),
-                    Text('Short description of the product goes here.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: AppTokens.colorBlack)),
+                    Text('₱9,999',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: AppTokens.colorBlack)),
+                    SizedBox(height: AppTokens.spacingXs),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppTokens.spacingSm,
+                        vertical: AppTokens.spacing2xs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTokens.colorOrange.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(AppTokens.radiusSm),
+                      ),
+                      child: Text(
+                        'Available on Shopee',
+                        style: TextStyle(
+                          color: AppTokens.colorBlack,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                     SizedBox(height: AppTokens.spacingXs),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => ProductDetailsPage(
-                              productIndex: widget.index,
-                              productName: 'Product ${widget.index + 1}',
-                              productDesc:
-                                  'Short description of the product goes here.',
-                              productPrice: '₱9,999',
-                            ),
-                          ),
-                        );
+                        _launchShopeeUrl('product-${widget.index}', context);
                       },
-                      child: const Text('View Product'),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('View on Shopee'),
+                          SizedBox(width: AppTokens.spacingXs),
+                          Icon(Icons.open_in_new, size: 14),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -1607,22 +1578,19 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                           style: ElevatedButton.styleFrom(
                               backgroundColor: AppTokens.colorWhite),
                           onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => ProductDetailsPage(
-                                  productIndex: widget.index,
-                                  productName: 'Product ${widget.index + 1}',
-                                  productDesc:
-                                      'Short description of the product goes here.',
-                                  productPrice: '₱9,999',
-                                ),
-                              ),
-                            );
+                            _launchShopeeUrl('product-${widget.index}', context);
                           },
-                          child: Text('View Product',
-                              style: GoogleFonts.poppins(
-                                  color: AppTokens.colorOrange,
-                                  fontWeight: FontWeight.w600)),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('Buy on Shopee',
+                                  style: GoogleFonts.poppins(
+                                      color: AppTokens.colorOrange,
+                                      fontWeight: FontWeight.w600)),
+                              SizedBox(width: AppTokens.spacingXs),
+                              Icon(Icons.open_in_new, size: 16, color: AppTokens.colorOrange),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -1639,17 +1607,7 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                 child: Center(
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => ProductDetailsPage(
-                            productIndex: widget.index,
-                            productName: 'Product ${widget.index + 1}',
-                            productDesc:
-                                'Short description of the product goes here.',
-                            productPrice: '₱9,999',
-                          ),
-                        ),
-                      );
+                      _launchShopeeUrl('product-${widget.index}', context);
                     },
                     child: Container(
                       padding: EdgeInsets.symmetric(
@@ -1666,10 +1624,17 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                           ),
                         ],
                       ),
-                      child: Text('View Product',
-                          style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
-                              color: AppTokens.colorWhite)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Buy on Shopee',
+                              style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTokens.colorWhite)),
+                          SizedBox(width: AppTokens.spacingXs),
+                          Icon(Icons.open_in_new, size: 14, color: AppTokens.colorWhite),
+                        ],
+                      ),
                     ),
                   ),
                 ),

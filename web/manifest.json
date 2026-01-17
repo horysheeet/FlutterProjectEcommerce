@@ -1,11 +1,11 @@
 {
-    "name": "website_for_kuya",
-    "short_name": "website_for_kuya",
+    "name": "Robotics Catalog - Shop on Shopee",
+    "short_name": "Robotics Catalog",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0D0D0D",
+    "theme_color": "#ED5833",
+    "description": "Browse our robotics catalog. All products available for secure purchase on Shopee.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

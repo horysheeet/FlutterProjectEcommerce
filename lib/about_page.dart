@@ -111,6 +111,37 @@ class _AboutPageState extends State<AboutPage> {
                     style: AppTokens.bodyLarge,
                     textAlign: TextAlign.center,
                   ),
+                  SizedBox(height: AppTokens.spacingMd),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppTokens.spacingLg,
+                      vertical: AppTokens.spacingMd,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTokens.colorOrange.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+                      border: Border.all(
+                        color: AppTokens.colorOrange,
+                        width: 2,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.info_outline, color: AppTokens.colorOrange, size: 24),
+                        SizedBox(width: AppTokens.spacingSm),
+                        Flexible(
+                          child: Text(
+                            'This is a product showcase. All purchases are completed securely on Shopee.',
+                            style: AppTokens.bodyMedium.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
