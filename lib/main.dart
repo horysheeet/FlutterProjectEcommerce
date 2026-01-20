@@ -90,6 +90,8 @@ class _MainAppWrapperState extends State<MainAppWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppTokens.colorDarkGrey,
@@ -97,12 +99,40 @@ class _MainAppWrapperState extends State<MainAppWrapper> {
           text: _pageTitles[_currentPageIndex],
           speed: 3,
           style: GoogleFonts.montserrat(
-            fontSize: 22,
+            fontSize: isMobile ? 16 : 22,
             fontWeight: FontWeight.w800,
             color: AppTokens.colorLightGrey,
           ),
         ),
-        actions: [
+        actions: isMobile ? [
+          PopupMenuButton<int>(
+            icon: Icon(Icons.menu, color: AppTokens.colorWhite),
+            onSelected: (index) => _navigateToPage(index),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 0,
+                child: Text('Home', style: TextStyle(
+                  color: _currentPageIndex == 0 ? AppTokens.colorOrange : AppTokens.colorBlack,
+                  fontWeight: _currentPageIndex == 0 ? FontWeight.bold : FontWeight.normal,
+                )),
+              ),
+              PopupMenuItem(
+                value: 1,
+                child: Text('Store', style: TextStyle(
+                  color: _currentPageIndex == 1 ? AppTokens.colorOrange : AppTokens.colorBlack,
+                  fontWeight: _currentPageIndex == 1 ? FontWeight.bold : FontWeight.normal,
+                )),
+              ),
+              PopupMenuItem(
+                value: 2,
+                child: Text('About', style: TextStyle(
+                  color: _currentPageIndex == 2 ? AppTokens.colorOrange : AppTokens.colorBlack,
+                  fontWeight: _currentPageIndex == 2 ? FontWeight.bold : FontWeight.normal,
+                )),
+              ),
+            ],
+          ),
+        ] : [
           TextButton(
             onPressed: _currentPageIndex == 0 ? null : () => _navigateToPage(0),
             child: Text('Home', style: AppTokens.labelLarge.copyWith(
@@ -232,7 +262,7 @@ class _FeaturedProductsCarouselState extends State<FeaturedProductsCarousel> {
         ),
         SizedBox(height: AppTokens.spacingMd),
         SizedBox(
-          height: 300,
+          height: MediaQuery.of(context).size.width < 600 ? 350 : 300,
           child: PageView.builder(
             controller: _pageController,
             onPageChanged: (index) => setState(() => _currentIndex = index),
@@ -375,6 +405,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: LayoutBuilder(builder: (context, constraints) {
         final height = MediaQuery.of(context).size.height - kToolbarHeight;
+        final isMobile = MediaQuery.of(context).size.width < 600;
         // Stack: fixed hero at top, scrollable content beneath it
         return Stack(
           children: [
@@ -394,7 +425,9 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     AnimatedSplitText(
                       text: 'Discover the Future of Robotics',
-                      style: AppTokens.headingLarge,
+                      style: isMobile 
+                        ? AppTokens.headingMedium 
+                        : AppTokens.headingLarge,
                     ),
                     SizedBox(height: AppTokens.spacingSm),
                     // This TextType stays fixed at the top now
@@ -891,6 +924,13 @@ class _TextTypeState extends State<TextType> {
 class StorePage extends StatelessWidget {
   const StorePage({super.key});
 
+  static int _getGridColumns(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width < 600) return 1; // Mobile: 1 column
+    if (width < 900) return 2; // Tablet: 2 columns
+    return 3; // Desktop: 3 columns
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -936,8 +976,8 @@ class StorePage extends StatelessWidget {
                 },
                 childCount: 30,
               ),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: StorePage._getGridColumns(context),
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 childAspectRatio: 0.8,
