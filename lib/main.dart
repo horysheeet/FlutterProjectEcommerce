@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:url_launcher/url_launcher.dart';
 import 'about_page.dart';
 import 'design_tokens.dart';
+import 'product_details_page.dart';
 
 Future<void> _launchEmail(String email, {String subject = ''}) async {
   final uri = Uri(
@@ -48,295 +49,91 @@ Future<void> _launchShopeeUrl(String productId, BuildContext context) async {
   }
 }
 
-/// Reusable standardized AppBar for all pages with consistent navigation
-PreferredSizeWidget buildAppBar(
-  BuildContext context, {
-  required String title,
-  bool showTitle = true,
-  bool isHome = false,
-  bool isStore = false,
-}) {
-  return AppBar(
-    backgroundColor: AppTokens.colorBlack,
-    title: showTitle
-        ? ShinyText(
-            text: title,
-            speed: 3,
-            style: GoogleFonts.montserrat(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: AppTokens.colorLightGrey,
-            ),
-          )
-        : null,
-    actions: [
-      TextButton(
-        onPressed: isHome
-            ? null
-            : () {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const HomePage()),
-                  (route) => false,
-                );
-              },
-        child: Text('Home', style: AppTokens.labelLarge),
-      ),
-      TextButton(
-        onPressed: isStore
-            ? null
-            : () {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const StorePage()),
-                  (route) => false,
-                );
-              },
-        child: Text('Store', style: AppTokens.labelLarge),
-      ),
-      TextButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const SupportChatPage()),
-          );
-        },
-        child: Text('Support', style: AppTokens.labelLarge),
-      ),
-      TextButton(
-        onPressed: () {
-          _launchEmail('support@company.com', subject: 'Support request');
-        },
-        child: Text('Contact', style: AppTokens.labelLarge),
-      ),
-      TextButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const AboutPage()),
-          );
-        },
-        child: Text('About', style: AppTokens.labelLarge),
-      ),
-    ],
-  );
-}
-
 void main() {
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTokens.appTheme,
-      home: const HomePage(),
+      home: const MainAppWrapper(),
     ),
   );
 }
 
-// Support Chat page — user messages appear on the right (black bubble),
-// support messages appear on the left (orange bubble). The input area is
-// orange and the send control is an orange circular send icon.
-class SupportChatPage extends StatefulWidget {
-  const SupportChatPage({super.key});
+// Main wrapper with persistent header
+class MainAppWrapper extends StatefulWidget {
+  const MainAppWrapper({super.key});
 
   @override
-  State<SupportChatPage> createState() => _SupportChatPageState();
+  State<MainAppWrapper> createState() => _MainAppWrapperState();
 }
 
-class _SupportChatPageState extends State<SupportChatPage> {
-  final TextEditingController _ctrl = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
+class _MainAppWrapperState extends State<MainAppWrapper> {
+  int _currentPageIndex = 0;
 
-  // Each message is usually a map {'text': String, 'isUser': bool} but
-  // on web or after a hot-reload the stored state may appear as a
-  // List<String>. Use a dynamic list and defensively handle both shapes.
-  final List<dynamic> _messages = [];
+  final List<Widget> _pages = [
+    const HomePage(),
+    const StorePage(),
+    const AboutPage(),
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    // welcome message from support
-    _messages.add({'text': 'Hi — how can we help you today?', 'isUser': false});
-    // slight delay to let the list render before scrolling to bottom
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
-  }
+  final List<String> _pageTitles = [
+    'WELCOME',
+    'STORE - COMPANY NAME',
+    'ABOUT',
+  ];
 
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _sendMessage() {
-    final text = _ctrl.text.trim();
-    if (text.isEmpty) return;
+  void _navigateToPage(int index) {
     setState(() {
-      _messages.add({'text': text, 'isUser': true});
-      _ctrl.clear();
-    });
-    _scrollToBottom();
-
-    // fake support reply for demo
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      setState(() {
-        _messages.add({
-          'text':
-              'Thanks for your message — a support agent will reply shortly.',
-          'isUser': false
-        });
-      });
-      _scrollToBottom();
-    });
-  }
-
-  void _scrollToBottom() {
-    // delay slightly to allow ListView to update sizes
-    Future.delayed(const Duration(milliseconds: 120), () {
-      if (!_scrollController.hasClients) return;
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+      _currentPageIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar(context, title: 'Support'),
-      body: Column(
-        children: [
-          Expanded(
-            child: _messages.isEmpty
-                ? Center(
-                    child: Text('No messages yet — send us a question',
-                        style: AppTokens.bodyMedium.copyWith(
-                            color:
-                                AppTokens.colorWhite.withValues(alpha: 0.7))),
-                  )
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: EdgeInsets.symmetric(
-                        horizontal: AppTokens.spacingSm,
-                        vertical: AppTokens.spacingMd),
-                    itemCount: _messages.length,
-                    itemBuilder: (context, i) {
-                      final item = _messages[i];
-
-                      // normalize item to text + isUser
-                      String text;
-                      bool isUser;
-                      if (item is Map) {
-                        text = (item['text'] ?? '').toString();
-                        isUser = item['isUser'] == true;
-                      } else {
-                        // fallback: treat plain strings as user messages
-                        text = item?.toString() ?? '';
-                        isUser = true;
-                      }
-
-                      final bubbleColor =
-                          isUser ? AppTokens.colorBlack : AppTokens.colorOrange;
-
-                      // align right for user, left for support
-                      return Padding(
-                        padding:
-                            EdgeInsets.symmetric(vertical: AppTokens.spacingXs),
-                        child: Row(
-                          mainAxisAlignment: isUser
-                              ? MainAxisAlignment.end
-                              : MainAxisAlignment.start,
-                          children: [
-                            ConstrainedBox(
-                              constraints: BoxConstraints(
-                                  maxWidth:
-                                      MediaQuery.of(context).size.width * 0.72),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: AppTokens.spacingSm,
-                                    vertical: AppTokens.spacingXs),
-                                decoration: BoxDecoration(
-                                  color: bubbleColor,
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(
-                                        isUser ? AppTokens.radiusMd : 4),
-                                    topRight: Radius.circular(
-                                        isUser ? 4 : AppTokens.radiusMd),
-                                    bottomLeft:
-                                        Radius.circular(AppTokens.radiusMd),
-                                    bottomRight:
-                                        Radius.circular(AppTokens.radiusMd),
-                                  ),
-                                ),
-                                child: Text(text,
-                                    style: AppTokens.bodyMedium
-                                        .copyWith(color: AppTokens.colorWhite)),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+      appBar: AppBar(
+        backgroundColor: AppTokens.colorDarkGrey,
+        title: ShinyText(
+          text: _pageTitles[_currentPageIndex],
+          speed: 3,
+          style: GoogleFonts.montserrat(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: AppTokens.colorLightGrey,
           ),
-
-          // Input area — orange background text field and circular send icon
-          SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: AppTokens.spacingSm,
-                  vertical: AppTokens.spacingXs),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppTokens.colorOrange,
-                        borderRadius: BorderRadius.circular(AppTokens.radiusXl),
-                      ),
-                      padding:
-                          EdgeInsets.symmetric(horizontal: AppTokens.spacingSm),
-                      child: TextField(
-                        controller: _ctrl,
-                        style: AppTokens.bodyMedium
-                            .copyWith(color: AppTokens.colorWhite),
-                        cursorColor: AppTokens.colorWhite,
-                        textInputAction: TextInputAction.send,
-                        decoration: InputDecoration(
-                          hintText: 'Type your message...',
-                          hintStyle: AppTokens.bodyMedium.copyWith(
-                              color:
-                                  AppTokens.colorWhite.withValues(alpha: 0.7)),
-                          border: InputBorder.none,
-                        ),
-                        onSubmitted: (_) => _sendMessage(),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: AppTokens.spacingXs),
-                  // larger tappable send 'blobb' — uses InkWell to ensure
-                  // taps are registered across platforms (web included)
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: AppTokens.colorOrange,
-                      shape: BoxShape.circle,
-                    ),
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      onTap: () {
-                        if (_ctrl.text.trim().isEmpty) return;
-                        _sendMessage();
-                      },
-                      child: Center(
-                        child: Icon(Icons.send, color: AppTokens.colorWhite),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: _currentPageIndex == 0 ? null : () => _navigateToPage(0),
+            child: Text('Home', style: AppTokens.labelLarge.copyWith(
+              color: _currentPageIndex == 0 ? AppTokens.colorOrange : AppTokens.colorWhite,
+            )),
+          ),
+          TextButton(
+            onPressed: _currentPageIndex == 1 ? null : () => _navigateToPage(1),
+            child: Text('Store', style: AppTokens.labelLarge.copyWith(
+              color: _currentPageIndex == 1 ? AppTokens.colorOrange : AppTokens.colorWhite,
+            )),
+          ),
+          TextButton(
+            onPressed: () {
+              _launchEmail('support@company.com', subject: 'Support request');
+            },
+            child: Text('Contact', style: AppTokens.labelLarge.copyWith(
+              color: AppTokens.colorWhite,
+            )),
+          ),
+          TextButton(
+            onPressed: _currentPageIndex == 2 ? null : () => _navigateToPage(2),
+            child: Text('About', style: AppTokens.labelLarge.copyWith(
+              color: _currentPageIndex == 2 ? AppTokens.colorOrange : AppTokens.colorWhite,
+            )),
           ),
         ],
+      ),
+      body: IndexedStack(
+        index: _currentPageIndex,
+        children: _pages,
       ),
     );
   }
@@ -576,7 +373,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar(context, title: 'COMPANY NAME', isHome: true),
       body: LayoutBuilder(builder: (context, constraints) {
         final height = MediaQuery.of(context).size.height - kToolbarHeight;
         // Stack: fixed hero at top, scrollable content beneath it
@@ -648,10 +444,9 @@ class _HomePageState extends State<HomePage> {
                               borderRadius:
                                   BorderRadius.circular(AppTokens.radiusXl))),
                       onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const StorePage()));
+                        // Navigation handled by MainAppWrapper
+                        final mainState = context.findAncestorStateOfType<_MainAppWrapperState>();
+                        mainState?._navigateToPage(1);
                       },
                       child: Text('Browse Catalog',
                           style: GoogleFonts.poppins(
@@ -1099,69 +894,38 @@ class StorePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-          buildAppBar(context, title: 'STORE - COMPANY NAME', isStore: true),
       body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 180,
-            floating: false,
-            pinned: false,
-            backgroundColor: AppTokens.colorDarkGrey,
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.parallax,
-              title: Container(
-                color: AppTokens.colorDarkGrey,
-                alignment: Alignment.center,
-                padding: EdgeInsets.symmetric(horizontal: AppTokens.spacingLg),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(height: AppTokens.spacingXs),
-                    Column(
-                      children: [
-                        TextType(
-                          text: [
-                            "Browse Our Catalog",
-                            "Find Your Perfect Product",
-                            "Shop on Shopee",
-                            "Secure Checkout on Shopee"
-                          ],
-                          typingSpeed: 75,
-                          pauseDuration: 1500,
-                          showCursor: true,
-                          cursorCharacter: "|",
-                          textStyle: AppTokens.headingSmall.copyWith(
-                            color: AppTokens.colorOrange,
-                          ),
-                        ),
-                        SizedBox(height: AppTokens.spacingSm),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppTokens.spacingMd,
-                            vertical: AppTokens.spacingXs,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTokens.colorOrange.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-                          ),
-                          child: Text(
-                            '🛍️ All purchases completed on Shopee',
-                            style: AppTokens.bodySmall.copyWith(
-                              color: AppTokens.colorWhite,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: AppTokens.spacingSm),
+      slivers: [
+        SliverAppBar(
+          expandedHeight: 100,
+          floating: false,
+          pinned: false,
+          backgroundColor: AppTokens.colorBlack,
+          automaticallyImplyLeading: false,
+          flexibleSpace: FlexibleSpaceBar(
+            collapseMode: CollapseMode.parallax,
+            background: Container(
+              color: AppTokens.colorBlack,
+              child: Center(
+                child: TextType(
+                  text: [
+                    "Browse Our Catalog",
+                    "Find Your Perfect Product",
+                    "Shop on Shopee",
+                    "Secure Checkout on Shopee"
                   ],
+                  typingSpeed: 75,
+                  pauseDuration: 1500,
+                  showCursor: true,
+                  cursorCharacter: "|",
+                  textStyle: AppTokens.headingSmall.copyWith(
+                    color: AppTokens.colorOrange,
+                  ),
                 ),
               ),
             ),
           ),
+        ),
           SliverPadding(
             padding: EdgeInsets.all(AppTokens.spacingLg),
             sliver: SliverGrid(
@@ -1255,7 +1019,6 @@ class _ProductCardState extends State<_ProductCard> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() => _hovering = false),
       child: AnimatedContainer(
@@ -1286,38 +1049,107 @@ class _ProductCardState extends State<_ProductCard> {
         ),
         margin: EdgeInsets.all(AppTokens.spacing2xs),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(Icons.smart_toy, size: 48, color: AppTokens.colorOrange),
-            SizedBox(height: AppTokens.spacingSm),
-            Text(
-              'Product ${widget.index + 1}',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                color: AppTokens.colorBlack,
+            // Middle clickable area - Opens Product Details Page
+            Expanded(
+              child: InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ProductDetailsPage(
+                        productIndex: widget.index,
+                        productName: 'Product ${widget.index + 1}',
+                        productDesc: 'High-quality robotic product with advanced features and capabilities. Perfect for industrial automation and smart manufacturing solutions.',
+                        productPrice: '₱9,999',
+                        shopeeUrl: 'https://shopee.ph/product/product-${widget.index}',
+                      ),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(AppTokens.radiusLg),
+                ),
+                child: Container(
+                  padding: EdgeInsets.all(AppTokens.spacingSm),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.smart_toy, size: 48, color: AppTokens.colorOrange),
+                      SizedBox(height: AppTokens.spacingSm),
+                      Text(
+                        'Product ${widget.index + 1}',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: AppTokens.colorBlack,
+                        ),
+                      ),
+                      SizedBox(height: AppTokens.spacingXs),
+                      Text(
+                        '₱9,999',
+                        style: GoogleFonts.openSans(
+                          color: AppTokens.colorBlack,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      SizedBox(height: AppTokens.spacingXs),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppTokens.spacingSm,
+                          vertical: AppTokens.spacing2xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTokens.colorOrange.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(AppTokens.radiusSm),
+                          border: Border.all(
+                            color: AppTokens.colorOrange,
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          'View Product',
+                          style: GoogleFonts.openSans(
+                            color: AppTokens.colorOrange,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            SizedBox(height: AppTokens.spacingXs),
-            Text(
-              '₱9,999',
-              style: GoogleFonts.openSans(
-                color: AppTokens.colorBlack,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            SizedBox(height: AppTokens.spacingXs),
-            ElevatedButton(
-              onPressed: () {
-                _launchShopeeUrl('product-${widget.index}', context);
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('View on Shopee', style: GoogleFonts.openSans()),
-                  SizedBox(width: AppTokens.spacingXs),
-                  Icon(Icons.open_in_new, size: 14),
-                ],
+            // Bottom button - Opens Shopee directly
+            Padding(
+              padding: EdgeInsets.all(AppTokens.spacingSm),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    _launchShopeeUrl('product-${widget.index}', context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTokens.colorOrange,
+                    foregroundColor: AppTokens.colorWhite,
+                    padding: EdgeInsets.symmetric(
+                      vertical: AppTokens.spacingSm,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.shopping_bag, size: 16),
+                      SizedBox(width: AppTokens.spacingXs),
+                      Text('Buy Now', style: GoogleFonts.openSans(fontSize: 13, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
@@ -1494,101 +1326,89 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
               : Border.all(color: Colors.transparent, width: 2),
         ),
         margin: EdgeInsets.all(AppTokens.spacing2xs),
-        child: Stack(
+        child: Column(
           children: [
-            // Card content
-            AnimatedOpacity(
-              opacity: _hovering ? 0.0 : 1.0,
-              duration: AppTokens.transitionFast,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.smart_toy,
-                        size: 48, color: AppTokens.colorOrange),
-                    SizedBox(height: AppTokens.spacingSm),
-                    Text('Product ${widget.index + 1}',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppTokens.colorBlack)),
-                    SizedBox(height: AppTokens.spacingXs),
-                    Text('₱9,999',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: AppTokens.colorBlack)),
-                    SizedBox(height: AppTokens.spacingXs),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppTokens.spacingSm,
-                        vertical: AppTokens.spacing2xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTokens.colorOrange.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(AppTokens.radiusSm),
-                      ),
-                      child: Text(
-                        'Available on Shopee',
-                        style: TextStyle(
-                          color: AppTokens.colorBlack,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
+            // Middle clickable section - Opens Product Details Page
+            Expanded(
+              child: InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ProductDetailsPage(
+                        productIndex: widget.index,
+                        productName: 'Product ${widget.index + 1}',
+                        productDesc: 'High-quality robotic product with advanced features and capabilities. Perfect for industrial automation and smart manufacturing solutions.',
+                        productPrice: '₱9,999',
+                        shopeeUrl: 'https://shopee.ph/product/product-${widget.index}',
                       ),
                     ),
-                    SizedBox(height: AppTokens.spacingXs),
-                    ElevatedButton(
-                      onPressed: () {
-                        _launchShopeeUrl('product-${widget.index}', context);
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('View on Shopee'),
-                          SizedBox(width: AppTokens.spacingXs),
-                          Icon(Icons.open_in_new, size: 14),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Simple fade overlay replacing tiled pixel animation
-            if (_hovering)
-              Positioned.fill(
+                  );
+                },
+                borderRadius: BorderRadius.vertical(top: Radius.circular(AppTokens.radiusLg)),
                 child: AnimatedOpacity(
-                  opacity: _hovering ? 1.0 : 0.0,
+                  opacity: _hovering ? 0.3 : 1.0,
                   duration: AppTokens.transitionFast,
                   child: Container(
-                    alignment: Alignment.center,
-                    color: AppTokens.colorOrange.withValues(alpha: 0.88),
+                    padding: EdgeInsets.all(AppTokens.spacingSm),
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          "Lorem Ipsum",
-                          style: AppTokens.headingSmall.copyWith(
-                            color: AppTokens.colorLightGrey,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
+                        Icon(Icons.smart_toy,
+                            size: 48, color: AppTokens.colorOrange),
                         SizedBox(height: AppTokens.spacingSm),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTokens.colorWhite),
-                          onPressed: () {
-                            _launchShopeeUrl('product-${widget.index}', context);
-                          },
+                        Text('Product ${widget.index + 1}',
+                            style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                color: AppTokens.colorBlack)),
+                        SizedBox(height: AppTokens.spacingXs),
+                        Text('₱9,999',
+                            style: GoogleFonts.openSans(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: AppTokens.colorBlack)),
+                        SizedBox(height: AppTokens.spacingSm),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppTokens.spacingLg,
+                            vertical: AppTokens.spacingSm,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppTokens.colorOrange,
+                                AppTokens.colorOrange.withValues(alpha: 0.8),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTokens.colorOrange.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('Buy on Shopee',
-                                  style: GoogleFonts.poppins(
-                                      color: AppTokens.colorOrange,
-                                      fontWeight: FontWeight.w600)),
+                              Icon(
+                                Icons.visibility,
+                                color: AppTokens.colorWhite,
+                                size: 16,
+                              ),
                               SizedBox(width: AppTokens.spacingXs),
-                              Icon(Icons.open_in_new, size: 16, color: AppTokens.colorOrange),
+                              Text(
+                                'View Product',
+                                style: GoogleFonts.poppins(
+                                  color: AppTokens.colorWhite,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -1597,44 +1417,40 @@ class _PixelTransitionCardState extends State<PixelTransitionCard>
                   ),
                 ),
               ),
-            // Bouncing View Product pill
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 18,
-              child: ScaleTransition(
-                scale: _scale,
-                child: Center(
-                  child: GestureDetector(
-                    onTap: () {
+            ),
+            // Bottom button - Opens Shopee (1/3 width)
+            Padding(
+              padding: EdgeInsets.only(
+                left: AppTokens.spacingSm,
+                right: AppTokens.spacingSm,
+                bottom: AppTokens.spacingSm,
+              ),
+              child: Center(
+                child: FractionallySizedBox(
+                  widthFactor: 0.65,
+                  child: ElevatedButton(
+                    onPressed: () {
                       _launchShopeeUrl('product-${widget.index}', context);
                     },
-                    child: Container(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTokens.colorOrange,
+                      foregroundColor: AppTokens.colorWhite,
                       padding: EdgeInsets.symmetric(
-                          horizontal: AppTokens.spacingLg,
-                          vertical: AppTokens.spacingXs),
-                      decoration: BoxDecoration(
-                        color: AppTokens.colorOrange,
-                        borderRadius: BorderRadius.circular(AppTokens.radiusXl),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTokens.colorBlack.withValues(alpha: 0.2),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
+                        horizontal: AppTokens.spacingXs,
+                        vertical: AppTokens.spacingXs,
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('Buy on Shopee',
-                              style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppTokens.colorWhite)),
-                          SizedBox(width: AppTokens.spacingXs),
-                          Icon(Icons.open_in_new, size: 14, color: AppTokens.colorWhite),
-                        ],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppTokens.radiusMd),
                       ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.shopping_bag, size: 14),
+                        SizedBox(width: 4),
+                        Text('Buy Now', style: GoogleFonts.openSans(fontSize: 11, fontWeight: FontWeight.w600)),
+                      ],
                     ),
                   ),
                 ),

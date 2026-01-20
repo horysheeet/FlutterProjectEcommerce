@@ -58,7 +58,20 @@ class ProductDetailsPage extends StatelessWidget {
         MediaQuery.of(context).size.width < AppTokens.breakpointTablet;
 
     return Scaffold(
-      appBar: buildAppBar(context, title: productName),
+      appBar: AppBar(
+        backgroundColor: AppTokens.colorBlack,
+        title: Text(
+          productName,
+          style: TextStyle(
+            color: AppTokens.colorWhite,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppTokens.colorWhite),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

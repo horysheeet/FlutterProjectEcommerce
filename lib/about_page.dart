@@ -88,7 +88,6 @@ class _AboutPageState extends State<AboutPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTokens.colorBlack,
-      appBar: buildAppBar(context, title: 'About Us'),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(AppTokens.spacingLg),
         child: Column(
