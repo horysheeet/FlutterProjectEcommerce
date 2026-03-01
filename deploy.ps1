@@ -1,13 +1,13 @@
 #!/usr/bin/env pwsh
 # Deploy Flutter Web App to GitHub Pages
-# Usage: .\deploy.ps1 -GitHubUsername "YOUR_USERNAME" -RepositoryName "website-for-kuya"
+# Usage: .\deploy.ps1 -GitHubUsername "YOUR_USERNAME" -RepositoryName "FlutterProjectEcommerce"
 
 param(
     [Parameter(Mandatory=$false)]
     [string]$GitHubUsername,
     
     [Parameter(Mandatory=$false)]
-    [string]$RepositoryName = "website-for-kuya",
+    [string]$RepositoryName = "FlutterProjectEcommerce",
     
     [Parameter(Mandatory=$false)]
     [string]$CommitMessage = "Deploy: Update Flutter web build"
@@ -57,7 +57,7 @@ if ($currentBranch -ne "main") {
 # Build Flutter web
 Write-Info ""
 Write-Info "Building Flutter web release..."
-flutter build web --release --pwa-strategy=none --dart-define=FLUTTER_WEB_USE_SKIA=false
+flutter build web --release --base-href "/FlutterProjectEcommerce/" --pwa-strategy=none --dart-define=FLUTTER_WEB_USE_SKIA=false
 if ($LASTEXITCODE -ne 0) {
     Write-Error-Msg "Build failed!"
     exit 1
