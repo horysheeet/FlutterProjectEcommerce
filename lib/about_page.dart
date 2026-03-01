@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'design_tokens.dart';
-import 'main.dart';
+import 'shared/theme/design_tokens.dart';
+import 'shared/widgets/app_footer.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -21,17 +21,17 @@ class _AboutPageState extends State<AboutPage> {
     {
       "quote":
           "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ultricies felis et elit fermentum tincidunt.",
-      "author": "Ryan Mendoza, Research Engineer"
+      "author": "Lorem Ipsum, Research Engineer"
     },
     {
       "quote":
           "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-      "author": "Ryan Mendoza, Product Designer"
+      "author": "Lorem Ipsum, Product Designer"
     },
     {
       "quote":
           "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-      "author": "Ryan Mendoza, Robotics Investor"
+      "author": "Lorem Ipsum, Robotics Investor"
     },
   ];
 
@@ -98,7 +98,7 @@ class _AboutPageState extends State<AboutPage> {
               child: Column(
                 children: [
                   Text(
-                    "About Company Name",
+                    "Microbot: Pioneering the Future of Robotics",
                     style: AppTokens.headingLarge.copyWith(
                       fontSize: 42,
                       color: AppTokens.colorOrange,
@@ -110,52 +110,26 @@ class _AboutPageState extends State<AboutPage> {
                     style: AppTokens.bodyLarge,
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: AppTokens.spacingMd),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppTokens.spacingLg,
-                      vertical: AppTokens.spacingMd,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppTokens.colorOrange.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-                      border: Border.all(
-                        color: AppTokens.colorOrange,
-                        width: 2,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.info_outline, color: AppTokens.colorOrange, size: 24),
-                        SizedBox(width: AppTokens.spacingSm),
-                        Flexible(
-                          child: Text(
-                            'This is a product showcase. All purchases are completed securely on Shopee.',
-                            style: AppTokens.bodyMedium.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),
             SizedBox(height: AppTokens.spacing2xl),
 
-            // --- Mission / Vision / Tech / Testimonials / Contact ---
+            // --- Mission / Vision / Tech / Testimonials ---
             _sectionTitle("Our Mission"),
             _sectionText(
-              "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+              "MicroBots is committed to:\n\n"
+              "• Providing high-quality and affordable technology products that meet the evolving needs of modern consumers.\n\n"
+              "• Delivering a secure, user-friendly, and efficient online shopping platform.\n\n"
+              "• Ensuring fast, reliable, and customer-centered service from browsing to after-sales support.\n\n"
+              "• Building long-term customer trust through transparency, integrity, and innovation.\n\n"
+              "• Continuously improving our platform through technology-driven solutions and customer feedback.",
             ),
             SizedBox(height: AppTokens.spacingLg),
 
             _sectionTitle("Our Vision"),
             _sectionText(
-              "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+              "To become a trusted and innovative eCommerce platform that empowers customers with accessible, affordable, and high-quality technology products, while delivering a seamless and reliable online shopping experience.",
             ),
             const SizedBox(height: 24),
 
@@ -166,20 +140,20 @@ class _AboutPageState extends State<AboutPage> {
               if (constraints.maxWidth < 600) {
                 return Column(
                   children: [
-                    _teamMember('Ryan Mendoza', 'Lead Engineer'),
+                    _teamMember('Vincent Jerald Mendoza', 'Lead Engineer'),
                     const SizedBox(height: 12),
-                    _teamMember('Ryan Mendoza', 'AI Developer'),
+                    _teamMember('Ryan Mendoza', 'Web Developer'),
                     const SizedBox(height: 12),
-                    _teamMember('Ryan Mendoza', 'Product Designer'),
+                    _teamMember('Vincent Jerald Mendoza', 'Product Designer'),
                   ],
                 );
               }
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _teamMember('Ryan Mendoza', 'Lead Engineer'),
-                  _teamMember('Ryan Mendoza', 'AI Developer'),
-                  _teamMember('Ryan Mendoza', 'Product Designer'),
+                  _teamMember('Vincent Jerald Mendoza', 'Lead Engineer'),
+                  _teamMember('Ryan Mendoza', 'Web Developer'),
+                  _teamMember('Vincent Jerald Mendoza', 'Product Designer'),
                 ],
               );
             }),
@@ -257,43 +231,7 @@ class _AboutPageState extends State<AboutPage> {
             _contactForm(),
 
             const SizedBox(height: 40),
-            // Footer — orange background to match theme
-            Container(
-              width: double.infinity,
-              color: const Color(0xFFED5833),
-              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-              child: Column(
-                children: [
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('© 2025 Company Name. All rights reserved.',
-                          style: GoogleFonts.openSans(color: Colors.white)),
-                      const SizedBox(width: 16),
-                      // Social icons
-                      IconButton(
-                        tooltip: 'GitHub',
-                        onPressed: () =>
-                            _launchUrl('https://github.com/yourorg'),
-                        icon: const Icon(Icons.code, color: Colors.white),
-                      ),
-                      IconButton(
-                        tooltip: 'LinkedIn',
-                        onPressed: () =>
-                            _launchUrl('https://linkedin.com/company/yourorg'),
-                        icon: const Icon(Icons.work, color: Colors.white),
-                      ),
-                      IconButton(
-                        tooltip: 'Email',
-                        onPressed: () => _launchUrl('mailto:info@company.com'),
-                        icon: const Icon(Icons.email, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            AppFooter(onLaunch: _launchUrl),
           ],
         ),
       ),
@@ -410,7 +348,7 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   Widget _teamMember(String name, String role) {
-    return Column(
+    return Column(  
       children: [
         const CircleAvatar(
             radius: 36,
