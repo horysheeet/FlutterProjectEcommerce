@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../shared/services/analytics_service.dart';
 import '../../shared/theme/design_tokens.dart';
 
 /// Launch Shopee product URL in external browser.
 Future<void> launchShopeeUrl(String productId, BuildContext context) async {
   final uri = Uri.parse('https://shopee.ph/product/$productId');
+  AnalyticsService.track(
+    'shopee_launch_attempt',
+    params: {'product_id': productId, 'url': uri.toString()},
+  );
 
   try {
     final launched = await launchUrl(

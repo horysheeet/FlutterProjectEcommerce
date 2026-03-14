@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 const String kDefaultProductDescription =
     'High-quality robotic product with advanced features and capabilities. Perfect for industrial automation and smart manufacturing solutions.';
 const String kUnoProductDescription =
@@ -70,17 +68,3 @@ const List<StoreProduct> kStoreProducts = [
     shopeeId: 'product-5',
   ),
 ];
-
-class FeaturedProduct {
-  final String name;
-  final String description;
-  final String price;
-  final IconData icon;
-
-  FeaturedProduct({
-    required this.name,
-    required this.description,
-    required this.price,
-    required this.icon,
-  });
-}

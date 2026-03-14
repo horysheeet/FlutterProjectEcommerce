@@ -4,7 +4,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../shared/theme/design_tokens.dart';
 
 class ProductDetailsPage extends StatelessWidget {
-  final int productIndex;
   final String productName;
   final String productDesc;
   final String productPrice;
@@ -13,7 +12,6 @@ class ProductDetailsPage extends StatelessWidget {
 
   const ProductDetailsPage({
     super.key,
-    required this.productIndex,
     required this.productName,
     required this.productDesc,
     required this.productPrice,
@@ -48,11 +46,15 @@ class ProductDetailsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppTokens.colorBlack,
-        title: Text(
-          productName,
-          style: TextStyle(
-            color: AppTokens.colorWhite,
-            fontWeight: FontWeight.w700,
+        title: InkWell(
+          onTap: () => Navigator.of(context).popUntil((route) => route.isFirst),
+          borderRadius: BorderRadius.circular(AppTokens.radiusSm),
+          child: Text(
+            'MICROBOT',
+            style: TextStyle(
+              color: AppTokens.colorWhite,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         leading: IconButton(
@@ -261,6 +263,16 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
                         imagePath,
                         fit: BoxFit.contain,
                         alignment: Alignment.center,
+                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                          if (wasSynchronouslyLoaded || frame != null) {
+                            return child;
+                          }
+                          return Icon(
+                            Icons.smart_toy,
+                            size: 120,
+                            color: AppTokens.colorOrange,
+                          );
+                        },
                         errorBuilder: (context, error, stackTrace) => Icon(
                           Icons.smart_toy,
                           size: 120,

@@ -10,7 +10,6 @@ class AppTokens {
   static const Color colorLightGrey = Color(0xFFE3EEF1); // Light accent
   static const Color colorWhite = Colors.white;
   static const Color colorRed = Colors.red;
-  static const Color colorTeal = Colors.teal;
 
   // ========== TYPOGRAPHY ==========
   static TextStyle get headingLarge => GoogleFonts.poppins(
@@ -76,8 +75,6 @@ class AppTokens {
   // ========== TRANSITION TIMINGS ==========
   static const Duration transitionFast = Duration(milliseconds: 200);
   static const Duration transitionNormal = Duration(milliseconds: 300);
-  static const Duration transitionSlow = Duration(milliseconds: 500);
-  static const Duration transitionVerySlow = Duration(milliseconds: 800);
 
   // ========== BORDER RADIUS ==========
   static const double radiusSm = 8.0;
@@ -86,10 +83,7 @@ class AppTokens {
   static const double radiusXl = 28.0;
 
   // ========== RESPONSIVE BREAKPOINTS ==========
-  static const double breakpointMobile = 320;
   static const double breakpointTablet = 768;
-  static const double breakpointDesktop = 1024;
-  static const double breakpointUltraWide = 1440;
 
   // ========== THEME DATA ==========
   static ThemeData get appTheme => ThemeData(
