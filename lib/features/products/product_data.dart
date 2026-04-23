@@ -9,6 +9,7 @@ class StoreProduct {
   final List<String> imagePaths;
   final List<String> bannerImages;
   final String shopeeUrl;
+  final bool isComingSoon;
 
   const StoreProduct({
     required this.id,
@@ -21,6 +22,7 @@ class StoreProduct {
     this.imagePaths = const [],
     this.bannerImages = const [],
     required this.shopeeUrl,
+    this.isComingSoon = false,
   });
 }
 
@@ -111,5 +113,21 @@ const List<StoreProduct> kStoreProducts = [
       'assets/images/Rover/3.jpg',
     ],
     shopeeUrl: 'https://shopee.ph/search?keyword=Rover%20Robotics%20Module',
+  ),
+  StoreProduct(
+    id: 'coming-soon',
+    name: 'Coming Soon',
+    shortDescription:
+        'A new product card is reserved for the next official release.',
+    fullDescription:
+        'This slot is intentionally reserved for an upcoming product announcement.',
+    price: 'Coming Soon',
+    features: [],
+    applications: [],
+    imagePaths: [
+      'assets/images/Others/2.png',
+    ],
+    shopeeUrl: '',
+    isComingSoon: true,
   ),
 ];

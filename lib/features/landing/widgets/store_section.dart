@@ -152,38 +152,42 @@ class _StoreProductCardState extends State<_StoreProductCard> {
                       children: [
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: () {
-                              AnalyticsService.track(
-                                'view_product_click',
-                                params: {'product': product.name},
-                              );
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => ProductDetailsPage(
-                                    product: product,
-                                  ),
-                                ),
-                              );
-                            },
+                            onPressed: product.isComingSoon
+                                ? null
+                                : () {
+                                    AnalyticsService.track(
+                                      'view_product_click',
+                                      params: {'product': product.name},
+                                    );
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => ProductDetailsPage(
+                                          product: product,
+                                        ),
+                                      ),
+                                    );
+                                  },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppTokens.colorWhite,
                               side: BorderSide(
                                 color: AppTokens.colorWhite.withValues(alpha: 0.4),
                               ),
                             ),
-                            child: const Text('View Product'),
+                            child: Text(product.isComingSoon ? 'Preview' : 'View Product'),
                           ),
                         ),
                         const SizedBox(width: AppTokens.spacingXs),
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () {
-                              AnalyticsService.track(
-                                'shopee_cta_click',
-                                params: {'product': product.name},
-                              );
-                              launchShopeeUrl(product.shopeeUrl, context);
-                            },
+                            onPressed: product.isComingSoon
+                                ? null
+                                : () {
+                                    AnalyticsService.track(
+                                      'shopee_cta_click',
+                                      params: {'product': product.name},
+                                    );
+                                    launchShopeeUrl(product.shopeeUrl, context);
+                                  },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTokens.colorOrange,
                               foregroundColor: AppTokens.colorWhite,
@@ -191,7 +195,7 @@ class _StoreProductCardState extends State<_StoreProductCard> {
                                 vertical: AppTokens.spacingSm,
                               ),
                             ),
-                            child: const Text('Buy on Shopee'),
+                            child: Text(product.isComingSoon ? 'Coming Soon' : 'Buy on Shopee'),
                           ),
                         ),
                       ],

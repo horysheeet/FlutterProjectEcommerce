@@ -21,10 +21,11 @@ class _FeaturedProductCarouselState extends State<FeaturedProductCarousel> {
   int _currentIndex = 0;
 
   List<StoreProduct> get _featuredProducts {
-    if (kStoreProducts.isEmpty) {
+    final products = kStoreProducts.where((product) => !product.isComingSoon).toList();
+    if (products.isEmpty) {
       return const <StoreProduct>[];
     }
-    return kStoreProducts;
+    return products;
   }
 
   @override

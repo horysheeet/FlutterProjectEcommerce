@@ -496,10 +496,10 @@ class _FooterSectionState extends State<_FooterSection> {
                   InkWell(
                     onTap: () {
                       AnalyticsService.track('contact_email_click');
-                      widget.onLaunch('mailto:email@email.com');
+                      widget.onLaunch('mailto:microps.ph@gmail.com');
                     },
                     child: Text(
-                      'Contact us now at email@email.com',
+                      'Contact us now at microps.ph@gmail.com',
                       style: AppTokens.bodySmall.copyWith(
                         color: AppTokens.colorOrange,
                         fontWeight: FontWeight.w600,
