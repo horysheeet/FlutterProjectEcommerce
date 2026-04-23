@@ -24,7 +24,7 @@ class _FeaturedProductCarouselState extends State<FeaturedProductCarousel> {
     if (kStoreProducts.isEmpty) {
       return const <StoreProduct>[];
     }
-    return kStoreProducts.take(5).toList(growable: false);
+    return kStoreProducts;
   }
 
   @override
@@ -71,7 +71,7 @@ class _FeaturedProductCarouselState extends State<FeaturedProductCarousel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Featured Product',
+          'Featured Products',
           style: AppTokens.headingMedium.copyWith(
             color: AppTokens.colorOrange,
             fontSize: 34,
@@ -79,7 +79,7 @@ class _FeaturedProductCarouselState extends State<FeaturedProductCarousel> {
         ),
         const SizedBox(height: AppTokens.spacingSm),
         Text(
-          'Tap the carousel or wait for auto-slide to discover highlighted items.',
+          'Three documented products for robotics and embedded learning.',
           style: AppTokens.bodyMedium.copyWith(
             color: AppTokens.colorLightGrey.withValues(alpha: 0.82),
           ),
@@ -176,13 +176,13 @@ class _FeaturedProductCard extends StatelessWidget {
                 children: [
                   Text(
                     product.name,
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: AppTokens.headingSmall.copyWith(fontSize: isNarrow ? 24 : 28),
                   ),
                   const SizedBox(height: AppTokens.spacingSm),
                   Text(
-                    product.description,
+                    product.shortDescription,
                     maxLines: isNarrow ? 3 : 4,
                     overflow: TextOverflow.ellipsis,
                     style: AppTokens.bodyMedium.copyWith(

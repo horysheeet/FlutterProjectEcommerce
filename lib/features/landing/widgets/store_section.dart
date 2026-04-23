@@ -10,9 +10,8 @@ class StoreSection extends StatelessWidget {
   const StoreSection({super.key});
 
   int _gridColumns(double width) {
-    if (width < 700) return 1;
-    if (width < 1100) return 2;
-    return 3;
+    if (width < 760) return 1;
+    return 2;
   }
 
   @override
@@ -32,7 +31,7 @@ class StoreSection extends StatelessWidget {
         ),
         const SizedBox(height: AppTokens.spacingSm),
         Text(
-          'Minimal catalog experience with direct Shopee checkout.',
+          'Engineering product catalog with direct Shopee access.',
           style: AppTokens.bodyMedium.copyWith(
             color: AppTokens.colorLightGrey.withValues(alpha: 0.82),
           ),
@@ -91,6 +90,13 @@ class _StoreProductCardState extends State<_StoreProductCard> {
           border: Border.all(
             color: AppTokens.colorWhite.withValues(alpha: 0.2),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: AppTokens.colorBlack.withValues(alpha: _isHovered ? 0.35 : 0.2),
+              blurRadius: _isHovered ? 20 : 12,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppTokens.radiusLg),
@@ -119,14 +125,14 @@ class _StoreProductCardState extends State<_StoreProductCard> {
                   children: [
                     Text(
                       product.name,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTokens.headingSmall.copyWith(fontSize: 22),
+                      style: AppTokens.headingSmall.copyWith(fontSize: 21, height: 1.2),
                     ),
                     const SizedBox(height: AppTokens.spacingXs),
                     Text(
-                      product.description,
-                      maxLines: 2,
+                      product.shortDescription,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: AppTokens.bodySmall.copyWith(
                         color: AppTokens.colorLightGrey.withValues(alpha: 0.85),
@@ -154,11 +160,7 @@ class _StoreProductCardState extends State<_StoreProductCard> {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (context) => ProductDetailsPage(
-                                    productName: product.name,
-                                    productDesc: product.description,
-                                    productPrice: product.price,
-                                    shopeeUrl: product.shopeeUrl,
-                                    imagePaths: product.imagePaths,
+                                    product: product,
                                   ),
                                 ),
                               );
@@ -180,7 +182,7 @@ class _StoreProductCardState extends State<_StoreProductCard> {
                                 'shopee_cta_click',
                                 params: {'product': product.name},
                               );
-                              launchShopeeUrl(product.shopeeId, context);
+                              launchShopeeUrl(product.shopeeUrl, context);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTokens.colorOrange,
@@ -189,7 +191,7 @@ class _StoreProductCardState extends State<_StoreProductCard> {
                                 vertical: AppTokens.spacingSm,
                               ),
                             ),
-                            child: const Text('Buy now'),
+                            child: const Text('Buy on Shopee'),
                           ),
                         ),
                       ],

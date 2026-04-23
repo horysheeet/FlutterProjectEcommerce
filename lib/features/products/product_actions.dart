@@ -4,11 +4,11 @@ import '../../shared/services/analytics_service.dart';
 import '../../shared/theme/design_tokens.dart';
 
 /// Launch Shopee product URL in external browser.
-Future<void> launchShopeeUrl(String productId, BuildContext context) async {
-  final uri = Uri.parse('https://shopee.ph/product/$productId');
+Future<void> launchShopeeUrl(String shopeeUrl, BuildContext context) async {
+  final uri = Uri.parse(shopeeUrl);
   AnalyticsService.track(
     'shopee_launch_attempt',
-    params: {'product_id': productId, 'url': uri.toString()},
+    params: {'url': uri.toString()},
   );
 
   try {

@@ -7,10 +7,9 @@ import '../../shared/services/analytics_service.dart';
 import '../../shared/theme/design_tokens.dart';
 import 'widgets/featured_product_carousel.dart';
 import 'widgets/hero_section.dart';
-import 'widgets/right_side_navigation.dart';
 import 'widgets/store_section.dart';
 
-enum SiteSection { home, store }
+enum SiteSection { home, store, about }
 
 class SinglePageSite extends StatefulWidget {
   const SinglePageSite({super.key});
@@ -25,12 +24,11 @@ class _SinglePageSiteState extends State<SinglePageSite>
   final Map<SiteSection, GlobalKey> _sectionKeys = {
     SiteSection.home: GlobalKey(),
     SiteSection.store: GlobalKey(),
+    SiteSection.about: GlobalKey(),
   };
 
   SiteSection _activeSection = SiteSection.home;
   bool _isCalculatingSection = false;
-  bool _isHeaderVisible = true;
-  double _lastOffset = 0;
 
   @override
   void initState() {
@@ -64,13 +62,6 @@ class _SinglePageSiteState extends State<SinglePageSite>
 
     _isCalculatingSection = true;
     final currentOffset = _scrollController.offset;
-    final scrollingDown = currentOffset > _lastOffset + 2;
-    final scrollingUp = currentOffset < _lastOffset - 2;
-    final shouldShowHeader = currentOffset < 16 || scrollingUp;
-
-    if (shouldShowHeader != _isHeaderVisible && (scrollingDown || scrollingUp || currentOffset < 16)) {
-      setState(() => _isHeaderVisible = shouldShowHeader);
-    }
 
     final viewportHeight = MediaQuery.of(context).size.height;
     final probeLine = currentOffset + viewportHeight * 0.35;
@@ -89,6 +80,12 @@ class _SinglePageSiteState extends State<SinglePageSite>
       }
     }
 
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final atBottomThreshold = maxScroll - 30;
+    if (currentOffset >= atBottomThreshold) {
+      nextActive = SiteSection.about;
+    }
+
     if (nextActive != _activeSection) {
       AnalyticsService.track(
         'section_view',
@@ -97,7 +94,6 @@ class _SinglePageSiteState extends State<SinglePageSite>
       setState(() => _activeSection = nextActive);
     }
 
-    _lastOffset = currentOffset;
     _isCalculatingSection = false;
   }
 
@@ -113,6 +109,21 @@ class _SinglePageSiteState extends State<SinglePageSite>
   }
 
   void _scrollToSection(SiteSection section) {
+    // Special case for About - scroll to bottom
+    if (section == SiteSection.about) {
+      AnalyticsService.track(
+        'navigate_section',
+        params: {'section': section.name},
+      );
+
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 550),
+        curve: Curves.easeInOutCubic,
+      );
+      return;
+    }
+
     final target = _sectionTop(section);
     if (target == null || !_scrollController.hasClients) return;
 
@@ -243,36 +254,24 @@ class _SinglePageSiteState extends State<SinglePageSite>
                       AppTokens.spacing2xl,
                     ),
                     sliver: SliverToBoxAdapter(
-                      child: _FooterSection(onLaunch: _launchUrl),
+                      child: _FooterSection(
+                        key: _sectionKeys[SiteSection.about],
+                        onLaunch: _launchUrl,
+                      ),
                     ),
                   ),
                 ],
               ),
-              if (isTabletOrDesktop)
-                Positioned(
-                  right: AppTokens.spacingLg,
-                  top: 0,
-                  bottom: 0,
-                  child: RightSideNavigation(
-                    activeSection: _activeSection,
-                    onSelect: _scrollToSection,
-                  ),
-                ),
               Positioned(
                 top: 0,
                 left: 0,
                 right: 0,
                 child: SafeArea(
                   bottom: false,
-                  child: AnimatedSlide(
-                    duration: AppTokens.transitionNormal,
-                    curve: Curves.easeInOut,
-                    offset: _isHeaderVisible ? Offset.zero : const Offset(0, -1.2),
-                    child: AnimatedOpacity(
-                      duration: AppTokens.transitionNormal,
-                      opacity: _isHeaderVisible ? 1 : 0,
-                      child: const _TopHeader(),
-                    ),
+                  child: _TopHeader(
+                    activeSection: _activeSection,
+                    onSelectSection: _scrollToSection,
+                    onMicrobotTap: () => _scrollToSection(SiteSection.home),
                   ),
                 ),
               ),
@@ -285,7 +284,15 @@ class _SinglePageSiteState extends State<SinglePageSite>
 }
 
 class _TopHeader extends StatelessWidget {
-  const _TopHeader();
+  final SiteSection activeSection;
+  final ValueChanged<SiteSection> onSelectSection;
+  final VoidCallback onMicrobotTap;
+
+  const _TopHeader({
+    required this.activeSection,
+    required this.onSelectSection,
+    required this.onMicrobotTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -308,14 +315,58 @@ class _TopHeader extends StatelessWidget {
         ),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'MICROBOT',
-            style: AppTokens.labelLarge.copyWith(
-              color: AppTokens.colorLightGrey,
-              letterSpacing: 1.2,
-              fontWeight: FontWeight.w800,
+          InkWell(
+            onTap: onMicrobotTap,
+            borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/Logo/logo.png',
+                  width: 28,
+                  height: 28,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Icon(
+                    Icons.memory,
+                    color: AppTokens.colorOrange,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: AppTokens.spacingXs),
+                Text(
+                  'MICROBOT',
+                  style: AppTokens.labelLarge.copyWith(
+                    color: AppTokens.colorLightGrey,
+                    letterSpacing: 1.2,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
             ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _NavItem(
+                label: 'Home',
+                isActive: activeSection == SiteSection.home,
+                onTap: () => onSelectSection(SiteSection.home),
+              ),
+              const SizedBox(width: AppTokens.spacingMd),
+              _NavItem(
+                label: 'Store',
+                isActive: activeSection == SiteSection.store,
+                onTap: () => onSelectSection(SiteSection.store),
+              ),
+              const SizedBox(width: AppTokens.spacingMd),
+              _NavItem(
+                label: 'About',
+                isActive: activeSection == SiteSection.about,
+                onTap: () => onSelectSection(SiteSection.about),
+              ),
+            ],
           ),
         ],
       ),
@@ -323,11 +374,65 @@ class _TopHeader extends StatelessWidget {
   }
 }
 
-class _FooterSection extends StatelessWidget {
+class _NavItem extends StatelessWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _NavItem({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTokens.spacingMd,
+            vertical: AppTokens.spacingXs,
+          ),
+          decoration: BoxDecoration(
+            color: isActive
+                ? AppTokens.colorOrange.withValues(alpha: 0.18)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppTokens.radiusXl),
+            border: Border.all(
+              color: isActive
+                  ? AppTokens.colorOrange.withValues(alpha: 0.5)
+                  : Colors.transparent,
+              width: 1.2,
+            ),
+          ),
+          child: Text(
+            label,
+            style: AppTokens.bodySmall.copyWith(
+              color: isActive
+                  ? AppTokens.colorOrange
+                  : AppTokens.colorLightGrey,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FooterSection extends StatefulWidget {
   final void Function(String url) onLaunch;
 
-  const _FooterSection({required this.onLaunch});
+  const _FooterSection({super.key, required this.onLaunch});
 
+  @override
+  State<_FooterSection> createState() => _FooterSectionState();
+}
+
+class _FooterSectionState extends State<_FooterSection> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -344,56 +449,76 @@ class _FooterSection extends StatelessWidget {
           ),
         ),
       ),
-      child: Wrap(
-        alignment: WrapAlignment.spaceBetween,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        runSpacing: AppTokens.spacingXs,
-        spacing: AppTokens.spacingSm,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            'MICROBOT',
-            style: AppTokens.labelLarge.copyWith(
-              letterSpacing: 1.6,
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-            ),
-          ),
-          Column(
+          Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Future-ready robotics, built for practical innovation.',
-                style: AppTokens.bodySmall.copyWith(
-                  color: AppTokens.colorLightGrey.withValues(alpha: 0.8),
-                  fontSize: 11,
+              Image.asset(
+                'assets/images/Logo/logo.png',
+                width: 24,
+                height: 24,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.memory,
+                  color: AppTokens.colorOrange,
+                  size: 20,
                 ),
               ),
-              const SizedBox(height: 2),
-              InkWell(
-                onTap: () {
-                  AnalyticsService.track('contact_email_click');
-                  onLaunch('mailto:email@email.com');
-                },
-                child: Text(
-                  'Contact us now at email@email.com',
-                  style: AppTokens.bodySmall.copyWith(
-                    color: AppTokens.colorOrange,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 11,
-                    decoration: TextDecoration.underline,
-                    decorationColor: AppTokens.colorOrange,
-                  ),
+              const SizedBox(width: AppTokens.spacingXs),
+              Text(
+                'MICROBOT',
+                style: AppTokens.labelLarge.copyWith(
+                  letterSpacing: 1.6,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
                 ),
               ),
             ],
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppTokens.spacingMd),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Future-ready robotics, built for practical innovation.',
+                    style: AppTokens.bodySmall.copyWith(
+                      color: AppTokens.colorLightGrey.withValues(alpha: 0.8),
+                      fontSize: 11,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  InkWell(
+                    onTap: () {
+                      AnalyticsService.track('contact_email_click');
+                      widget.onLaunch('mailto:email@email.com');
+                    },
+                    child: Text(
+                      'Contact us now at email@email.com',
+                      style: AppTokens.bodySmall.copyWith(
+                        color: AppTokens.colorOrange,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+                        decoration: TextDecoration.underline,
+                        decorationColor: AppTokens.colorOrange,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
                 tooltip: 'GitHub',
-                onPressed: () => onLaunch('https://github.com/horysheeet'),
+                onPressed: () => widget.onLaunch('https://github.com/horysheeet'),
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 padding: const EdgeInsets.all(4),
                 iconSize: 18,
@@ -401,7 +526,7 @@ class _FooterSection extends StatelessWidget {
               ),
               IconButton(
                 tooltip: 'Shopee',
-                onPressed: () => onLaunch('https://shopee.ph/'),
+                onPressed: () => widget.onLaunch('https://shopee.ph/'),
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 padding: const EdgeInsets.all(4),
                 iconSize: 18,

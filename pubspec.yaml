@@ -27,5 +27,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - Product Images/Product 1/
-    - assets/product_images/product_1/
+    - assets/images/BYOU/
+    - assets/images/Nano Expansion/
+    - assets/images/Rover/
+    - assets/images/Others/
+    - assets/images/Logo/

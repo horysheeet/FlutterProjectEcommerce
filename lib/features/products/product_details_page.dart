@@ -2,27 +2,27 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../shared/theme/design_tokens.dart';
+import 'product_data.dart';
 
 class ProductDetailsPage extends StatelessWidget {
-  final String productName;
-  final String productDesc;
-  final String productPrice;
-  final String shopeeUrl;
-  final List<String> imagePaths;
+  final StoreProduct product;
 
   const ProductDetailsPage({
     super.key,
-    required this.productName,
-    required this.productDesc,
-    required this.productPrice,
-    this.shopeeUrl = '',
-    this.imagePaths = const [],
+    required this.product,
   });
 
-  Future<void> _openShopeeLink(BuildContext context) async {
-    if (shopeeUrl.trim().isEmpty) return;
+  List<String> get _detailImages {
+    if (product.bannerImages.isEmpty) {
+      return product.imagePaths;
+    }
+    return [...product.imagePaths, ...product.bannerImages];
+  }
 
-    final uri = Uri.tryParse(shopeeUrl);
+  Future<void> _openShopeeLink(BuildContext context) async {
+    if (product.shopeeUrl.trim().isEmpty) return;
+
+    final uri = Uri.tryParse(product.shopeeUrl);
     if (uri == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid Shopee link.')),
@@ -72,7 +72,7 @@ class ProductDetailsPage extends StatelessWidget {
               height: isMobile ? 360 : 460,
               color: AppTokens.colorDarkGrey,
               child: ProductImageCarousel(
-                imagePaths: imagePaths,
+                imagePaths: _detailImages,
               ),
             ),
             // Product Details
@@ -99,7 +99,7 @@ class ProductDetailsPage extends StatelessWidget {
                       ),
                       backgroundColor: AppTokens.colorOrange.withValues(alpha: 0.1),
                     ),
-                    onPressed: shopeeUrl.trim().isEmpty
+                    onPressed: product.shopeeUrl.trim().isEmpty
                       ? null
                       : () => _openShopeeLink(context),
                     child: Row(
@@ -123,16 +123,40 @@ class ProductDetailsPage extends StatelessWidget {
                   ),
                   SizedBox(height: AppTokens.spacingMd),
                   Text(
-                    productName,
+                    product.name,
                     style: AppTokens.headingMedium,
                   ),
                   const SizedBox(height: AppTokens.spacingMd),
                   Text(
-                    productPrice,
+                    product.price,
                     style: AppTokens.priceTag.copyWith(
                       color: AppTokens.colorOrange,
                       fontSize: 28,
                     ),
+                  ),
+                  const SizedBox(height: AppTokens.spacingLg),
+                  ElevatedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.add_shopping_cart),
+                    label: const Text('Add to Cart'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTokens.colorOrange,
+                      foregroundColor: AppTokens.colorWhite,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppTokens.spacingLg,
+                        vertical: AppTokens.spacingSm,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppTokens.spacingLg),
+                  Text(
+                    'Technical Summary',
+                    style: AppTokens.headingSmall,
+                  ),
+                  const SizedBox(height: AppTokens.spacingSm),
+                  Text(
+                    product.shortDescription,
+                    style: AppTokens.bodyMedium,
                   ),
                   const SizedBox(height: AppTokens.spacingLg),
                   Text(
@@ -141,8 +165,70 @@ class ProductDetailsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: AppTokens.spacingSm),
                   Text(
-                    productDesc,
+                    product.fullDescription,
                     style: AppTokens.bodyMedium,
+                  ),
+                  const SizedBox(height: AppTokens.spacingLg),
+                  Text(
+                    'Key Features',
+                    style: AppTokens.headingSmall,
+                  ),
+                  const SizedBox(height: AppTokens.spacingSm),
+                  ...product.features.map(
+                    (feature) => Padding(
+                      padding: const EdgeInsets.only(bottom: AppTokens.spacingXs),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Icon(
+                              Icons.circle,
+                              size: 7,
+                              color: AppTokens.colorOrange,
+                            ),
+                          ),
+                          const SizedBox(width: AppTokens.spacingSm),
+                          Expanded(
+                            child: Text(
+                              feature,
+                              style: AppTokens.bodyMedium,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppTokens.spacingLg),
+                  Text(
+                    'Applications',
+                    style: AppTokens.headingSmall,
+                  ),
+                  const SizedBox(height: AppTokens.spacingSm),
+                  ...product.applications.map(
+                    (application) => Padding(
+                      padding: const EdgeInsets.only(bottom: AppTokens.spacingXs),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Icon(
+                              Icons.circle,
+                              size: 7,
+                              color: AppTokens.colorOrange,
+                            ),
+                          ),
+                          const SizedBox(width: AppTokens.spacingSm),
+                          Expanded(
+                            child: Text(
+                              application,
+                              style: AppTokens.bodyMedium,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: AppTokens.spacingXl),
                 ],
@@ -157,12 +243,10 @@ class ProductDetailsPage extends StatelessWidget {
 
 class ProductImageCarousel extends StatefulWidget {
   static const List<String> fallbackImages = [
-    'assets/product_images/product_1/B1.png',
-    'assets/product_images/product_1/B2.png',
-    'assets/product_images/product_1/G1.png',
-    'assets/product_images/product_1/G2.png',
-    'assets/product_images/product_1/W1.png',
-    'assets/product_images/product_1/W2.png',
+    'assets/images/BYOU/BLK.JPG',
+    'assets/images/BYOU/BLK_BACK.jpg',
+    'assets/images/BYOU/GRN.jpg',
+    'assets/images/BYOU/WHT.jpg',
   ];
 
   final List<String> imagePaths;
